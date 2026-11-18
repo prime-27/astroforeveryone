@@ -87,15 +87,20 @@ iframe.banner { display: block; width: 100%; height: auto; border: 0; margin: 8p
 .card img { border-radius: 6px; }
 .card h3 { margin: 12px 0 6px; font-size: 17px; line-height: 24px; }
 .card p { color: var(--ink-muted); font-size: 14px; line-height: 21px; }
+/* four tool cards: 4 across, 2 × 2, or 1 column, never 3 + 1 */
+.cards.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (min-width: 820px) { .cards.four { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .cards.four { grid-template-columns: 1fr; } }
 .tool-card { text-decoration: none; color: var(--ink); transition: border-color .2s, transform .2s; }
 .tool-card h3 { margin-top: 0; color: var(--orbit-blue); }
 .tool-card:hover { border-color: var(--orbit-blue); transform: translateY(-2px); }
 
 /* Tonight's sky panel */
-.tonight { margin: 8px 0 24px; }
+.tonight { margin: 8px 0 24px; overflow-wrap: normal; } /* main's "anywhere" let grid columns crush words to one letter */
 .tonight-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
 .tonight-head h2 { margin: 24px 0 12px; }
-.sky-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+/* two columns on wide screens (a 2 × 2 block of four cards), one on phones */
+.sky-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
 .sky-card { background: rgba(14, 35, 71, .88); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
 .sky-card h3 { margin: 0 0 8px; font-size: 17px; line-height: 24px; color: var(--orbit-blue); }
 .sky-card p { margin: 0 0 6px; }
@@ -108,7 +113,7 @@ iframe.banner { display: block; width: 100%; height: auto; border: 0; margin: 8p
 .muted, .note { color: var(--ink-muted); font-size: 14px; }
 .small-print { margin-top: 12px; }
 .planets { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.planets li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; }
+.planets li { display: grid; grid-template-columns: 5.5em 1fr auto; gap: 12px; align-items: baseline; white-space: nowrap; }
 .planets .faded { opacity: .45; }
 .button.small { padding: 6px 14px; font-size: 14px; cursor: pointer; font-family: inherit; }
 

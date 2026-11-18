@@ -56,7 +56,8 @@ export default function TonightSky() {
           <div>
             <h3>{sky.moon.name}</h3>
             <p className="big">{Math.round(sky.moon.lit * 100)}% lit</p>
-            <p className="data">Moonrise {time(sky.moon.rise, tz)} · Moonset {time(sky.moon.set, tz)}</p>
+            <p className="data">Moonrise {time(sky.moon.rise, tz)}</p>
+            <p className="data">Moonset {time(sky.moon.set, tz)}</p>
           </div>
         </article>
 

@@ -38,7 +38,7 @@ export default function Home() {
       <main>
         <Suspense fallback={<p className="loading">Calculating tonight's sky…</p>}><TonightSky /></Suspense>
         <h2>Try it yourself</h2>
-        <div className="cards">
+        <div className="cards four">
           {TOOLS.map((t) => (
             <Link key={t.slug} className="card tool-card" to={`/${t.slug}`}>
               <h3>{t.title}</h3>
