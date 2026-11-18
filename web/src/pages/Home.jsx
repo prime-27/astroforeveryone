@@ -5,6 +5,7 @@ import { loadPage } from '../content.js'
 
 // three.js is only needed here, so it loads in its own chunk
 const Universe = lazy(() => import('../components/Universe.jsx'))
+const TonightSky = lazy(() => import('../components/TonightSky.jsx'))
 
 const TOOLS = [
   { slug: 'sky-tools', title: 'Sky Tools', text: "Planisphere, tonight's sky over Hyderabad, and upcoming eclipses." },
@@ -35,6 +36,7 @@ export default function Home() {
         </div>
       </section>
       <main>
+        <Suspense fallback={<p className="loading">Calculating tonight's sky…</p>}><TonightSky /></Suspense>
         <h2>Try it yourself</h2>
         <div className="cards">
           {TOOLS.map((t) => (

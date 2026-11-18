@@ -267,8 +267,11 @@ def render(blocks):
         if kind == "img":
             out.append(f"<figure>{h}</figure>")
         elif kind == "video":
+            # some owners block embedding, so always offer the YouTube page too
             out.append(f'<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/{h}" title="Video" '
-                       'allowfullscreen loading="lazy"></iframe></div>')
+                       'allowfullscreen loading="lazy"></iframe></div>'
+                       f'<p class="video-link"><a href="https://www.youtube.com/watch?v={h}" target="_blank" rel="noopener">'
+                       'Watch on YouTube ↗</a></p>')
         elif kind == "embed":
             t, ratio = html.escape(key[0]), key[1]
             if ratio < 40:  # short page-banner embeds: no heading, no full-screen link

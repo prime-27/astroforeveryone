@@ -31,7 +31,10 @@ export class ParticleEngine {
     this.onPointer = (e) => {
       this.pointer.x = e.clientX / window.innerWidth - 0.5
       this.pointer.y = e.clientY / window.innerHeight - 0.5
+      // constellation lines follow a mouse only; touch has no hover
+      this.cursor = e.pointerType === 'mouse' ? { x: e.clientX, y: e.clientY } : null
     }
+    this.onLeave = () => { this.cursor = null }
     this.onVisibility = () => (document.hidden ? this.stop() : this.start())
   }
 
@@ -86,7 +89,10 @@ export class ParticleEngine {
       ctx.beginPath()
       ctx.arc(px, py, s.r, 0, Math.PI * 2)
       ctx.fill()
+      s.px = px
+      s.py = py
     }
+    if (this.cursor) this.drawConstellation(this.cursor)
     for (const m of this.meteors) {
       const p = m.life / m.ttl
       const x = m.x + m.vx * m.life, y = m.y + m.vy * m.life
@@ -99,6 +105,30 @@ export class ParticleEngine {
       ctx.beginPath()
       ctx.moveTo(x, y)
       ctx.lineTo(x - m.vx * len, y - m.vy * len)
+      ctx.stroke()
+    }
+  }
+
+  // join the brighter stars near the pointer into a constellation: each to its nearest neighbour
+  drawConstellation({ x, y }, radius = 160, max = 10) {
+    const near = this.stars
+      .filter((s) => s.layer > 0 && Math.hypot(s.px - x, s.py - y) < radius)
+      .sort((a, b) => Math.hypot(a.px - x, a.py - y) - Math.hypot(b.px - x, b.py - y))
+      .slice(0, max)
+    const { ctx } = this
+    ctx.lineWidth = 0.8
+    for (const s of near) {
+      let best = null, bd = Infinity
+      for (const o of near) {
+        const d = o === s ? Infinity : Math.hypot(o.px - s.px, o.py - s.py)
+        if (d < bd) { bd = d; best = o }
+      }
+      if (!best) continue
+      const fade = 1 - Math.hypot(s.px - x, s.py - y) / radius
+      ctx.strokeStyle = `rgba(117,181,221,${(0.55 * fade).toFixed(3)})`
+      ctx.beginPath()
+      ctx.moveTo(s.px, s.py)
+      ctx.lineTo(best.px, best.py)
       ctx.stroke()
     }
   }
@@ -130,6 +160,7 @@ export class ParticleEngine {
     window.addEventListener('resize', this.onResize)
     window.addEventListener('scroll', this.onScroll, { passive: true })
     window.addEventListener('pointermove', this.onPointer, { passive: true })
+    document.documentElement.addEventListener('mouseleave', this.onLeave)
     document.addEventListener('visibilitychange', this.onVisibility)
     this.start()
     return () => {
@@ -137,6 +168,7 @@ export class ParticleEngine {
       window.removeEventListener('resize', this.onResize)
       window.removeEventListener('scroll', this.onScroll)
       window.removeEventListener('pointermove', this.onPointer)
+      document.documentElement.removeEventListener('mouseleave', this.onLeave)
       document.removeEventListener('visibilitychange', this.onVisibility)
     }
   }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import nav from '../nav.json'
+import NightVision from './NightVision.jsx'
 
 export default function Header() {
   const navRef = useRef(null)
@@ -33,6 +34,7 @@ export default function Header() {
           </details>
         ))}
       </nav>
+      <NightVision />
     </header>
   )
 }

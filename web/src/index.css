@@ -17,7 +17,8 @@ a { color: var(--link); text-underline-offset: 2px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 img { max-width: 100%; height: auto; border-radius: 20px; }
 
-.starfield { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+/* -1 inside #root's stacking context: above the page background, below all content and photos */
+.starfield { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
 .top {
   position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px;
@@ -72,6 +73,8 @@ figure { margin: 24px 0; }
 .content { background: rgba(7, 20, 43, .55); border-radius: 20px; }
 .video { position: relative; aspect-ratio: 16 / 9; margin: 24px 0; }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 12px; }
+.video { margin-bottom: 6px; }
+.video-link { text-align: right; font-size: 14px; }
 
 /* interactive tools are wider than the text column */
 .tool { margin: 32px calc(50% - min(50vw, 640px)); padding: 0 16px; }
@@ -87,6 +90,39 @@ iframe.banner { display: block; width: 100%; height: auto; border: 0; margin: 8p
 .tool-card { text-decoration: none; color: var(--ink); transition: border-color .2s, transform .2s; }
 .tool-card h3 { margin-top: 0; color: var(--orbit-blue); }
 .tool-card:hover { border-color: var(--orbit-blue); transform: translateY(-2px); }
+
+/* Tonight's sky panel */
+.tonight { margin: 8px 0 24px; }
+.tonight-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.tonight-head h2 { margin: 24px 0 12px; }
+.sky-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.sky-card { background: rgba(14, 35, 71, .88); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.sky-card h3 { margin: 0 0 8px; font-size: 17px; line-height: 24px; color: var(--orbit-blue); }
+.sky-card p { margin: 0 0 6px; }
+.moon-card { display: flex; gap: 16px; align-items: center; }
+.moon-icon { width: 88px; height: 88px; flex: none; }
+.moon-dark { fill: #1b2742; }
+.moon-lit { fill: #f3efe4; }
+.big { font: 600 22px/1.2 var(--font-display); }
+.data { font: 14px/1.5 "Noto Sans Mono", ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+.muted, .note { color: var(--ink-muted); font-size: 14px; }
+.small-print { margin-top: 12px; }
+.planets { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.planets li { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; }
+.planets .faded { opacity: .45; }
+.button.small { padding: 6px 14px; font-size: 14px; cursor: pointer; font-family: inherit; }
+
+/* Night vision: astronomers use red light so their eyes stay adapted to the dark */
+.night-toggle {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 9999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink-muted); font: 700 14px var(--font-sans); cursor: pointer;
+}
+.night-toggle .dot { width: 10px; height: 10px; border-radius: 50%; background: #7a1a10; box-shadow: 0 0 0 2px rgba(249, 108, 83, .3); }
+.night-toggle[aria-pressed="true"] { color: var(--ink); border-color: #c0392b; }
+.night-toggle[aria-pressed="true"] .dot { background: #ff3b30; box-shadow: 0 0 8px #ff3b30; }
+/* brightness of every pixel (tools and photos too) goes to the red channel only; filter defined in index.html */
+html.night-vision { filter: url(#night-red); }
+html.night-vision .top { background: var(--surface); backdrop-filter: none; } /* blur has no backdrop under a filter */
 
 footer {
   display: grid; gap: 6px; justify-items: center; padding: 32px 16px; text-align: center; font-size: 14px;
