@@ -1,0 +1,125 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Interactive tool</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #070a13 0%, #03060b 100%); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; padding: 36px 30px; font-family: 'Segoe UI', system-ui, sans-serif; color: #f3f4f6; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box;">
+
+    <!-- Catchy Animated Numbers Bar (Powered by JavaScript) -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; text-align: center;">
+        
+        <div class="stat-card">
+            <div class="stat-number" data-target="2500" data-suffix="+">0</div>
+            <div class="stat-label">Students Mentored</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number" data-target="50000" data-suffix="k+" data-divisor="1000">0</div>
+            <div class="stat-label">Outreach Reach</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number" data-target="11" data-suffix="+">0</div>
+            <div class="stat-label">Years Experience</div>
+        </div>
+
+    </div>
+
+<!-- Elegant Styles -->
+<style>
+    .stat-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(56, 189, 248, 0.15);
+        border-radius: 14px;
+        padding: 20px 12px;
+        backdrop-filter: blur(8px);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(56, 189, 248, 0.4);
+    }
+    .stat-number {
+        font-size: 2.3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.1;
+        margin-bottom: 6px;
+        letter-spacing: -0.03em;
+    }
+    .stat-label {
+        font-size: 0.68rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+    .link-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-sizing: border-box;
+    }
+    .link-card:hover {
+        transform: translateY(-2px);
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(129, 140, 248, 0.4);
+    }
+    .action-btn {
+        color: #ffffff !important;
+        padding: 11px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.82rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    }
+</style>
+
+<!-- JavaScript for Catchy Animated Number Counter Effect -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll('.stat-number');
+        const speed = 60; // Lower is faster
+
+        counters.forEach(counter => {
+            const target = +counter.getAttribute('data-target');
+            const suffix = counter.getAttribute('data-suffix') || '';
+            const divisor = counter.getAttribute('data-divisor');
+            
+            let count = 0;
+            const increment = target / speed;
+
+            const updateCount = () => {
+                count += increment;
+                if (count < target) {
+                    let displayNum = Math.ceil(count);
+                    if (divisor) {
+                        displayNum = Math.ceil(count / divisor);
+                    }
+                    counter.innerText = displayNum.toLocaleString() + suffix;
+                    setTimeout(updateCount, 25);
+                } else {
+                    let finalNum = target;
+                    if (divisor) {
+                        finalNum = target / divisor;
+                    }
+                    counter.innerText = finalNum.toLocaleString() + suffix;
+                }
+            };
+
+            updateCount();
+        });
+    });
+</script>
+</body></html>

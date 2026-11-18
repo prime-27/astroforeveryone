@@ -1,0 +1,5 @@
+# Apache (Hostinger): serve index.html for app routes like /events so the React router handles them
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]

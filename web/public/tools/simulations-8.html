@@ -1,0 +1,546 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Space Missions &amp; Planets</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="canvas-container" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div id="control-panel" style="position: absolute; top: 12px; left: 12px; width: 330px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #FBBF24; margin-bottom: 2px;">Space Missions & Planets</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Dynamic Interplanetary Trajectories</p>
+
+        <button id="btn-toggle-motion" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Motion</button>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9; margin-bottom: 2px;">
+                <span>Sim Speed:</span>
+                <span id="val-speed" style="color: #58A6FF; font-weight: 600;">30.0 days/sec</span>
+            </div>
+            <input type="range" id="slider-speed" min="0.5" max="180.0" step="0.5" value="30.0" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #38BDF8; font-weight: 700; margin: 8px 0 4px 0;">🪐 Navigate to Body</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-nav active" onclick="navTo('sun', this)">☀️ Sun</button>
+            <button class="btn-nav" onclick="navTo('Mercury', this)">☿ Mercury</button>
+            <button class="btn-nav" onclick="navTo('Venus', this)">♀ Venus</button>
+            <button class="btn-nav" onclick="navTo('Earth', this)">🌍 Earth</button>
+            <button class="btn-nav" onclick="navTo('Moon', this)" style="border-color: #64748B;">🌕 Moon</button>
+            <button class="btn-nav" onclick="navTo('Mars', this)">♂ Mars</button>
+            <button class="btn-nav" onclick="navTo('Jupiter', this)">♃ Jupiter</button>
+            <button class="btn-nav" onclick="navTo('Saturn', this)">♄ Saturn</button>
+            <button class="btn-nav" onclick="navTo('Uranus', this)">♅ Uranus</button>
+            <button class="btn-nav" onclick="navTo('Neptune', this)" style="grid-column: span 3;">♆ Neptune</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #FBBF24; font-weight: 700; margin: 8px 0 4px 0;">🇮🇳 Indian ISRO Missions</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-mis isro" onclick="toggleDossier('aditya', this)">☀️ Aditya-L1</button>
+            <button class="btn-mis isro" onclick="toggleDossier('mom', this)">♂ Mangalyaan</button>
+            <button class="btn-mis isro" onclick="toggleDossier('ch3', this)">🌕 Chandrayaan-3</button>
+            <button class="btn-mis isro" onclick="toggleDossier('ch1', this)">🌕 Chandrayaan-1</button>
+            <button class="btn-mis isro" onclick="toggleDossier('astrosat', this)">🔭 AstroSat</button>
+            <button class="btn-mis isro" onclick="toggleDossier('xposat', this)">⚡ XPoSat</button>
+            <button class="btn-mis isro" onclick="toggleDossier('shukrayaan', this)" style="grid-column: span 2;">♀ Shukrayaan-1</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin: 8px 0 4px 0;">Global Missions</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;">
+            <button class="btn-mis" onclick="toggleDossier('parker', this)">Parker Sun</button>
+            <button class="btn-mis" onclick="toggleDossier('soho', this)">SOHO</button>
+            <button class="btn-mis" onclick="toggleDossier('bepicolombo', this)">BepiColombo</button>
+            <button class="btn-mis" onclick="toggleDossier('perseverance', this)">Perseverance</button>
+            <button class="btn-mis" onclick="toggleDossier('curiosity', this)">Curiosity</button>
+            <button class="btn-mis" onclick="toggleDossier('mro', this)">MRO</button>
+            <button class="btn-mis" onclick="toggleDossier('juno', this)">Juno</button>
+            <button class="btn-mis" onclick="toggleDossier('cassini', this)">Cassini</button>
+            <button class="btn-mis" onclick="toggleDossier('newhorizons', this)">New Horizons</button>
+            <button class="btn-mis" onclick="toggleDossier('voyager1', this)">Voyager 1</button>
+            <button class="btn-mis" onclick="toggleDossier('voyager2', this)">Voyager 2</button>
+            <button class="btn-mis" onclick="toggleDossier('rosetta', this)">Rosetta</button>
+        </div>
+    </div>
+
+    <!-- Toggleable Fact Sheet Modal -->
+    <div id="fact-sheet-card" style="position: absolute; top: 75px; right: 12px; width: 340px; background: rgba(13, 17, 23, 0.96); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 12px; padding: 14px; z-index: 150; max-height: calc(100% - 90px); overflow-y: auto; display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.85);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px;">
+            <div>
+                <h4 id="d-title" style="font-size: 1.1rem; color: #FBBF24; font-weight: 700;">Mission</h4>
+                <p id="d-subtitle" style="font-size: 0.68rem; color: #8B949E; text-transform: uppercase;">Agency • Target</p>
+            </div>
+            <button onclick="closeDossier()" style="background: #21262D; border: 1px solid rgba(255,255,255,0.15); color: #C9D1D9; width: 24px; height: 24px; border-radius: 50%; font-size: 0.8rem; cursor: pointer;">✕</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; font-size: 0.74rem; margin-bottom: 8px;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 5px;"><span style="color:#8B949E; display:block; font-size:0.65rem;">Agency</span><span id="d-agency" style="color:#FBBF24; font-weight:600;">ISRO</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 5px;"><span style="color:#8B949E; display:block; font-size:0.65rem;">Launcher</span><span id="d-launcher" style="font-weight:600;">PSLV</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 5px;"><span style="color:#8B949E; display:block; font-size:0.65rem;">Launch Date</span><span id="d-date" style="font-weight:600;">Date</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 5px;"><span style="color:#8B949E; display:block; font-size:0.65rem;">Destination</span><span id="d-dest" style="color:#58A6FF; font-weight:600;">Target</span></div>
+        </div>
+
+        <div style="font-size: 0.74rem; color: #C9D1D9; line-height: 1.4; background: rgba(255, 255, 255, 0.02); border-radius: 6px; padding: 8px; border-left: 3px solid #FBBF24;" id="d-desc">
+            Description
+        </div>
+    </div>
+
+    <!-- UI Buttons Styling -->
+    <style>
+        .btn-nav { padding: 4px; background: #0F172A; border: 1px solid #334155; color: #94A3B8; border-radius: 4px; font-size: 0.68rem; cursor: pointer; font-weight: 600; text-align: center; }
+        .btn-nav:hover { background: #1E293B; border-color: #38BDF8; color: #38BDF8; }
+        .btn-nav.active { background: #0284C7; color: #FFF; border-color: #38BDF8; }
+
+        .btn-mis { padding: 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .btn-mis:hover { background: #334155; border-color: #58A6FF; color: #58A6FF; }
+        .btn-mis.active { background: #1F6FEB; color: #FFF; border-color: #58A6FF; font-weight: 700; }
+
+        .btn-mis.isro { border-color: #F59E0B; background: #78350F; color: #FEF3C7; font-weight: 600; }
+        .btn-mis.isro:hover { background: #92400E; border-color: #FBBF24; }
+        .btn-mis.isro.active { background: #D97706; color: #FFF; border-color: #FDE68A; font-weight: bold; }
+    </style>
+</div>
+
+<!-- Three.js CDN Bundled Runtime -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    const MISSIONS_DB = {
+        "aditya": { name: "Aditya-L1", subtitle: "ISRO • Solar & Coronagraph Observatory", agency: "ISRO (India) 🇮🇳", launcher: "PSLV-C57", date: "2 Sep 2023", dest: "Sun-Earth L1 Halo Orbit", desc: "India's premier space-based solar observatory. Positioned at Lagrange Point L1, it provides continuous real-time observations of the solar photosphere, chromosphere, and corona without eclipses to study coronal heating and CMEs." },
+        "mom": { name: "Mangalyaan (MOM)", subtitle: "ISRO • Mars Orbiter Mission", agency: "ISRO (India) 🇮🇳", launcher: "PSLV-C25", date: "5 Nov 2013", dest: "Mars Orbit", desc: "India's historic first interplanetary mission. ISRO became the first agency in the world to reach Mars orbit on its maiden attempt and at record cost-efficiency, returning thousands of high-definition images." },
+        "ch3": { name: "Chandrayaan-3", subtitle: "ISRO • Lunar South Pole Landing", agency: "ISRO (India) 🇮🇳", launcher: "LVM3-M4", date: "14 Jul 2023", dest: "Lunar South Pole", desc: "Historic mission that made India the first nation in human history to soft-land near the Moon's South Pole (at 69.37° S, 32.35° E - Shiv Shakti Point), discovering in-situ elemental sulfur in lunar soil." },
+        "ch1": { name: "Chandrayaan-1", subtitle: "ISRO • Moon Water Discovery", agency: "ISRO (India) 🇮🇳", launcher: "PSLV-C11", date: "22 Oct 2008", dest: "Lunar Polar Orbit", desc: "India's first lunar probe, which famously made the breakthrough discovery of widespread water (H₂O) and hydroxyl (OH) molecules locked in lunar soil and polar craters." },
+        "astrosat": { name: "AstroSat", subtitle: "ISRO • Multi-Wavelength Space Observatory", agency: "ISRO (India) 🇮🇳", launcher: "PSLV-C30", date: "28 Sep 2015", dest: "650 km Low Earth Orbit", desc: "India's dedicated space observatory for simultaneous multi-wavelength observations across optical, near-UV, far-UV, and broadband X-ray regimes." },
+        "xposat": { name: "XPoSat", subtitle: "ISRO • X-ray Polarimeter Satellite", agency: "ISRO (India) 🇮🇳", launcher: "PSLV-C58", date: "1 Jan 2024", dest: "650 km Low Earth Orbit", desc: "Dedicated scientific satellite measuring cosmic X-ray polarization from black hole binaries, neutron stars, and supernova remnants." },
+        "shukrayaan": { name: "Shukrayaan-1", subtitle: "ISRO • Venus Orbiter Mission", agency: "ISRO (India) 🇮🇳", launcher: "LVM3", date: "Planned Window", dest: "Venus Polar Orbit", desc: "ISRO's upcoming planetary mission equipped with high-resolution Synthetic Aperture Radar (SAR) to penetrate Venus's thick clouds and map surface volcanism." },
+        "parker": { name: "Parker Solar Probe", subtitle: "NASA • Touching the Solar Corona", agency: "NASA (USA)", launcher: "Delta IV Heavy", date: "12 Aug 2018", dest: "Inner Solar Corona", desc: "The fastest human-made object in history (reaching ~700,000 km/h). Flies directly through the Sun's outer corona to investigate coronal heating and solar wind acceleration." },
+        "soho": { name: "SOHO", subtitle: "ESA / NASA • Solar & Heliospheric Observatory", agency: "ESA / NASA", launcher: "Atlas IIAS", date: "2 Dec 1995", dest: "Sun-Earth L1 Halo Orbit", desc: "Operating continuously at Sun-Earth L1 for over 28 years, SOHO has revolutionized solar physics and discovered over 5,000 sungrazing comets." },
+        "bepicolombo": { name: "BepiColombo", subtitle: "ESA / JAXA • Dual Mercury Orbiters", agency: "ESA / JAXA", launcher: "Ariane 5", date: "20 Oct 2018", dest: "Mercury Orbit", desc: "Joint European-Japanese mission carrying two orbiters to Mercury to study the planet's dense iron core, magnetic field, and exosphere interactions." },
+        "perseverance": { name: "Perseverance", subtitle: "NASA • Mars 2020 Rover", agency: "NASA (USA)", launcher: "Atlas V 541", date: "30 Jul 2020", dest: "Jezero Crater, Mars", desc: "Exploring ancient river delta deposits in Jezero Crater to search for biosignatures, cache core samples, and supported 72 powered flights of the Ingenuity Mars Helicopter." },
+        "curiosity": { name: "Curiosity (MSL)", subtitle: "NASA • Mars Science Laboratory", agency: "NASA (USA)", launcher: "Atlas V 541", date: "26 Nov 2011", dest: "Gale Crater, Mars", desc: "Nuclear-powered rover that confirmed ancient Mars possessed habitable freshwater lake environments with carbon, nitrogen, and sulfur building blocks." },
+        "mro": { name: "MRO", subtitle: "NASA • Mars Reconnaissance Orbiter", agency: "NASA (USA)", launcher: "Atlas V 401", date: "12 Aug 2005", dest: "Mars Orbit", desc: "Equipped with the high-resolution HiRISE camera, MRO has returned ultra-detailed imagery of the Martian landscape for over two decades." },
+        "juno": { name: "Juno", subtitle: "NASA • Jupiter Polar Orbiter", agency: "NASA (USA)", launcher: "Atlas V 551", date: "5 Aug 2011", dest: "Jupiter Polar Orbit", desc: "Solar-powered spacecraft investigating Jupiter's deep core, atmospheric water, magnetosphere, and performing ultra-close flybys of Europa and Io." },
+        "cassini": { name: "Cassini-Huygens", subtitle: "NASA / ESA / ASI • Saturn Flagship", agency: "NASA / ESA / ASI", launcher: "Titan IVB", date: "15 Oct 1997", dest: "Saturn Orbit & Titan", desc: "Orbited Saturn for 13 years (2004–2017). Discovered water-ice geysers on Enceladus, methane lakes on Titan via Huygens, and plunged into Saturn's atmosphere." },
+        "newhorizons": { name: "New Horizons", subtitle: "NASA • Pluto & Kuiper Belt Flyby", agency: "NASA (USA)", launcher: "Atlas V 551", date: "19 Jan 2006", dest: "Pluto & Arrokoth", desc: "Conducted the historic first flyby of Pluto and Charon in July 2015, revealing glaciers of nitrogen ice (Sputnik Planitia) and water-ice mountains." },
+        "voyager1": { name: "Voyager 1", subtitle: "NASA • Interstellar Probe", agency: "NASA (USA)", launcher: "Titan IIIE", date: "5 Sep 1977", dest: "Interstellar Space (162+ AU)", desc: "The most distant human-made object in existence. Crossed the heliopause in August 2012 into interstellar space, carrying the Golden Record." },
+        "voyager2": { name: "Voyager 2", subtitle: "NASA • Outer Planets Grand Tour", agency: "NASA (USA)", launcher: "Titan IIIE", date: "20 Aug 1977", dest: "Interstellar Space (136+ AU)", desc: "The only spacecraft to have visited all four outer giants: Jupiter, Saturn, Uranus, and Neptune. Entered interstellar space in 2018." },
+        "rosetta": { name: "Rosetta & Philae", subtitle: "ESA • Comet Rendezvous & Lander", agency: "ESA (Europe)", launcher: "Ariane 5G+", date: "2 Mar 2004", dest: "Comet 67P", desc: "First mission to orbit and soft-land a probe (Philae) on the nucleus of a comet, studying primordial water chemistry." }
+    };
+
+    const PLANETS_CONFIG = [
+        { id: "Mercury", a: 6.0, period: 87.97, size: 0.28, color: 0xA5A5A5 },
+        { id: "Venus", a: 9.0, period: 224.70, size: 0.46, color: 0xE3BB7B },
+        { id: "Earth", a: 13.0, period: 365.25, size: 0.50, color: 0x0284C7 },
+        { id: "Mars", a: 18.0, period: 686.98, size: 0.36, color: 0xEF4444 },
+        { id: "Jupiter", a: 26.0, period: 4332.59, size: 1.15, color: 0xF59E0B },
+        { id: "Saturn", a: 35.0, period: 10759.22, size: 0.95, color: 0xFDE68A, rings: true },
+        { id: "Uranus", a: 43.0, period: 30685.4, size: 0.68, color: 0x38BDF8 },
+        { id: "Neptune", a: 51.0, period: 60189.0, size: 0.65, color: 0x3B82F6 }
+    ];
+
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 3000);
+    camera.position.set(0, 48, 65);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xFFFFFF, 0.45));
+    const sunLight = new THREE.PointLight(0xFFFFFF, 3.5, 400, 0.2);
+    scene.add(sunLight);
+
+    // Starfield
+    const starsGeo = new THREE.BufferGeometry();
+    const starCoords = [];
+    for (let i = 0; i < 2000; i++) {
+        const u = Math.random() * Math.PI * 2;
+        const v = Math.acos((Math.random() * 2) - 1);
+        const r = 240 + Math.random() * 120;
+        starCoords.push(r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+    }
+    starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+    scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.8, transparent: true, opacity: 0.85 })));
+
+    function makeLabel(text, color = '#FFFFFF', size = 2.4) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = color;
+        ctx.font = 'bold 34px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, 256, 75);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+        sprite.scale.set(size, size * 0.25, 1);
+        return sprite;
+    }
+
+    // 1. Sun
+    const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(2.4, 32, 32), new THREE.MeshBasicMaterial({ color: 0xFBBF24 }));
+    const sunCorona = new THREE.Mesh(new THREE.SphereGeometry(3.5, 24, 24), new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.35 }));
+    sunMesh.add(sunCorona);
+    scene.add(sunMesh);
+    const sunLabel = makeLabel('☀️ Sun', '#FBBF24', 3.4);
+    sunLabel.position.set(0, 3.5, 0);
+    sunMesh.add(sunLabel);
+
+    // 2. Planets
+    const groupPlanets = new THREE.Group();
+    scene.add(groupPlanets);
+    const planetObjects = {};
+
+    PLANETS_CONFIG.forEach(p => {
+        const pts = [];
+        for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            pts.push(new THREE.Vector3(p.a * Math.cos(a), 0, p.a * Math.sin(a)));
+        }
+        const ring = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.55 }));
+        groupPlanets.add(ring);
+
+        const pMesh = new THREE.Mesh(new THREE.SphereGeometry(p.size, 24, 24), new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.4 }));
+        groupPlanets.add(pMesh);
+
+        if (p.rings) {
+            const ringGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.3, 32);
+            const ringMesh = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xCDB284, side: THREE.DoubleSide, transparent: true, opacity: 0.8 }));
+            ringMesh.rotation.x = Math.PI / 2 + 0.35;
+            pMesh.add(ringMesh);
+        }
+
+        const lbl = makeLabel(p.id, '#' + p.color.toString(16).padStart(6, '0'), 1.8);
+        groupPlanets.add(lbl);
+
+        planetObjects[p.id] = { config: p, mesh: pMesh, label: lbl, pos: new THREE.Vector3() };
+    });
+
+    // 3. Moon (Luna)
+    const moonOrbitGroup = new THREE.Group();
+    const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), new THREE.MeshStandardMaterial({ color: 0xCFD8DC, roughness: 0.7 }));
+    const moonTrackPts = [];
+    for (let i = 0; i <= 64; i++) {
+        const a = (i / 64) * Math.PI * 2;
+        moonTrackPts.push(new THREE.Vector3(1.2 * Math.cos(a), 0.1 * Math.sin(a), 1.2 * Math.sin(a)));
+    }
+    const moonTrack = new THREE.Line(new THREE.BufferGeometry().setFromPoints(moonTrackPts), new THREE.LineBasicMaterial({ color: 0x64748B, transparent: true, opacity: 0.6 }));
+    const moonLabel = makeLabel('🌕 Moon', '#ECEFF1', 1.6);
+    moonOrbitGroup.add(moonTrack, moonMesh, moonLabel);
+    scene.add(moonOrbitGroup);
+
+    const moonObject = { mesh: moonMesh, label: moonLabel, group: moonOrbitGroup, pos: new THREE.Vector3() };
+
+    // 4. Spacecraft
+    const groupSpacecraft = new THREE.Group();
+    scene.add(groupSpacecraft);
+    const dynamicMissions = [];
+
+    function buildCraft(colorHex) {
+        const g = new THREE.Group();
+        const bus = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.28, 0.28), new THREE.MeshStandardMaterial({ color: 0xD1D5DB, metalness: 0.8 }));
+        const pMat = new THREE.MeshStandardMaterial({ color: 0x1E3A8A });
+        const pL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 0.18), pMat); pL.position.set(-0.4, 0, 0);
+        const pR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 0.18), pMat); pR.position.set(0.4, 0, 0);
+        g.add(bus, pL, pR);
+        return g;
+    }
+
+    function addMission(id, colorHex, updaterFn) {
+        const trackLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: colorHex, dashSize: 0.4, gapSize: 0.2, linewidth: 2 }));
+        const probe = buildCraft(colorHex);
+        const label = makeLabel(MISSIONS_DB[id].name, colorHex, 2.2);
+        groupSpacecraft.add(trackLine, probe, label);
+
+        dynamicMissions.push({ id, updater: updaterFn, trackLine, probe, label });
+    }
+
+    // Trajectory Bindings
+    addMission("aditya", "#FBBF24", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const eAngle = Math.atan2(ePos.z, ePos.x);
+        const l1 = new THREE.Vector3(11.8 * Math.cos(eAngle), 0, 11.8 * Math.sin(eAngle));
+        const a = prog * Math.PI * 4;
+        const p = new THREE.Vector3(l1.x + 0.4 * Math.cos(a), 0.4 * Math.sin(a), l1.z + 0.4 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(l1.x + 0.4 * Math.cos(t), 0.4 * Math.sin(t), l1.z + 0.4 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("mom", "#F59E0B", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const mPos = planetObjects["Mars"].pos;
+        const t = (prog * 0.4) % 1.0;
+        const mid = new THREE.Vector3().addVectors(ePos, mPos).multiplyScalar(0.5).setLength(16.5); mid.y = 1.0;
+        const p = new THREE.Vector3().addScaledVector(ePos, (1 - t) * (1 - t)).addScaledVector(mid, 2 * (1 - t) * t).addScaledVector(mPos, t * t);
+        const pts = []; for (let i = 0; i <= 30; i++) { const ti = i / 30; pts.push(new THREE.Vector3().addScaledVector(ePos, (1 - ti) * (1 - ti)).addScaledVector(mid, 2 * (1 - ti) * ti).addScaledVector(mPos, ti * ti)); }
+        return { p, pts };
+    });
+
+    addMission("ch3", "#FDE047", (prog) => {
+        const mPos = moonObject.pos;
+        const a = prog * Math.PI * 8;
+        const p = new THREE.Vector3(mPos.x + 0.45 * Math.cos(a), 0.25 * Math.sin(a), mPos.z + 0.45 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(mPos.x + 0.45 * Math.cos(t), 0.25 * Math.sin(t), mPos.z + 0.45 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("ch1", "#FDE68A", (prog) => {
+        const mPos = moonObject.pos;
+        const a = prog * Math.PI * 6;
+        const p = new THREE.Vector3(mPos.x + 0.35 * Math.cos(a), 0.3 * Math.sin(a), mPos.z + 0.35 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(mPos.x + 0.35 * Math.cos(t), 0.3 * Math.sin(t), mPos.z + 0.35 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("astrosat", "#FBBF24", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const a = prog * Math.PI * 8;
+        const p = new THREE.Vector3(ePos.x + 0.8 * Math.cos(a), 0.35 * Math.sin(a), ePos.z + 0.8 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(ePos.x + 0.8 * Math.cos(t), 0.35 * Math.sin(t), ePos.z + 0.8 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("xposat", "#FBBF24", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const a = prog * Math.PI * 7;
+        const p = new THREE.Vector3(ePos.x + 0.85 * Math.cos(a), 0.45 * Math.cos(a), ePos.z + 0.85 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(ePos.x + 0.85 * Math.cos(t), 0.45 * Math.cos(t), ePos.z + 0.85 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("shukrayaan", "#F59E0B", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const vPos = planetObjects["Venus"].pos;
+        const t = (prog * 0.5) % 1.0;
+        const mid = new THREE.Vector3().addVectors(ePos, vPos).multiplyScalar(0.5).setLength(10.5);
+        const p = new THREE.Vector3().addScaledVector(ePos, (1 - t) * (1 - t)).addScaledVector(mid, 2 * (1 - t) * t).addScaledVector(vPos, t * t);
+        const pts = []; for (let i = 0; i <= 30; i++) { const ti = i / 30; pts.push(new THREE.Vector3().addScaledVector(ePos, (1 - ti) * (1 - ti)).addScaledVector(mid, 2 * (1 - ti) * ti).addScaledVector(vPos, ti * ti)); }
+        return { p, pts };
+    });
+
+    addMission("soho", "#38BDF8", (prog) => {
+        const ePos = planetObjects["Earth"].pos;
+        const eAngle = Math.atan2(ePos.z, ePos.x);
+        const l1 = new THREE.Vector3(11.7 * Math.cos(eAngle), 0, 11.7 * Math.sin(eAngle));
+        const a = prog * Math.PI * 3.5;
+        const p = new THREE.Vector3(l1.x + 0.35 * Math.cos(a), 0.4 * Math.sin(a), l1.z + 0.35 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const t = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(l1.x + 0.35 * Math.cos(t), 0.4 * Math.sin(t), l1.z + 0.35 * Math.sin(t))); }
+        return { p, pts };
+    });
+
+    addMission("parker", "#38BDF8", (prog) => {
+        const theta = prog * Math.PI * 2;
+        const r = (2.8 * 1.65) / (1 + 0.65 * Math.cos(theta));
+        const p = new THREE.Vector3(r * Math.cos(theta), 0.2 * Math.sin(theta), r * Math.sin(theta));
+        const pts = []; for (let i = 0; i <= 60; i++) { const a = (i / 60) * Math.PI * 2; const ra = (2.8 * 1.65) / (1 + 0.65 * Math.cos(a)); pts.push(new THREE.Vector3(ra * Math.cos(a), 0.2 * Math.sin(a), ra * Math.sin(a))); }
+        return { p, pts };
+    });
+
+    addMission("bepicolombo", "#38BDF8", (prog) => {
+        const mPos = planetObjects["Mercury"].pos;
+        const a = prog * Math.PI * 4;
+        const p = new THREE.Vector3(mPos.x + 0.9 * Math.cos(a), 0.4 * Math.sin(a), mPos.z + 0.9 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const ai = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(mPos.x + 0.9 * Math.cos(ai), 0.4 * Math.sin(ai), mPos.z + 0.9 * Math.sin(ai))); }
+        return { p, pts };
+    });
+
+    addMission("perseverance", "#38BDF8", () => {
+        const mPos = planetObjects["Mars"].pos;
+        const p = new THREE.Vector3(mPos.x + 0.4, 0.2, mPos.z + 0.2);
+        return { p, pts: [p, p] };
+    });
+
+    addMission("curiosity", "#38BDF8", () => {
+        const mPos = planetObjects["Mars"].pos;
+        const p = new THREE.Vector3(mPos.x - 0.35, 0.2, mPos.z - 0.25);
+        return { p, pts: [p, p] };
+    });
+
+    addMission("mro", "#38BDF8", (prog) => {
+        const mPos = planetObjects["Mars"].pos;
+        const a = prog * Math.PI * 7;
+        const p = new THREE.Vector3(mPos.x + 0.85 * Math.cos(a), 0.9 * Math.sin(a), mPos.z + 0.85 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const ai = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(mPos.x + 0.85 * Math.cos(ai), 0.9 * Math.sin(ai), mPos.z + 0.85 * Math.sin(ai))); }
+        return { p, pts };
+    });
+
+    addMission("juno", "#93C5FD", (prog) => {
+        const jPos = planetObjects["Jupiter"].pos;
+        const a = prog * Math.PI * 5;
+        const p = new THREE.Vector3(jPos.x + 1.4 * Math.cos(a), 2.2 * Math.sin(a), jPos.z + 0.5 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const ai = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(jPos.x + 1.4 * Math.cos(ai), 2.2 * Math.sin(ai), jPos.z + 0.5 * Math.sin(ai))); }
+        return { p, pts };
+    });
+
+    addMission("cassini", "#93C5FD", (prog) => {
+        const sPos = planetObjects["Saturn"].pos;
+        const a = prog * Math.PI * 6;
+        const p = new THREE.Vector3(sPos.x + 2.4 * Math.cos(a), 0.7 * Math.sin(a), sPos.z + 2.4 * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 32; i++) { const ai = (i / 32) * Math.PI * 2; pts.push(new THREE.Vector3(sPos.x + 2.4 * Math.cos(ai), 0.7 * Math.sin(ai), sPos.z + 2.4 * Math.sin(ai))); }
+        return { p, pts };
+    });
+
+    addMission("newhorizons", "#60A5FA", (prog) => {
+        const d = 13.0 + (prog * 55.0) % 70.0;
+        const p = new THREE.Vector3(d * Math.cos(-1.2), 0.12 * d, d * Math.sin(-1.2));
+        const pts = []; for (let i = 0; i <= 30; i++) { const di = 13.0 + i * 1.8; pts.push(new THREE.Vector3(di * Math.cos(-1.2), 0.12 * di, di * Math.sin(-1.2))); }
+        return { p, pts };
+    });
+
+    addMission("voyager1", "#60A5FA", (prog) => {
+        const d = 13.0 + (prog * 60.0) % 85.0;
+        const p = new THREE.Vector3(d * Math.cos(0.65), d * 0.35, d * Math.sin(0.65));
+        const pts = []; for (let i = 0; i <= 30; i++) { const di = 13.0 + i * 2.0; pts.push(new THREE.Vector3(di * Math.cos(0.65), di * 0.35, di * Math.sin(0.65))); }
+        return { p, pts };
+    });
+
+    addMission("voyager2", "#60A5FA", (prog) => {
+        const d = 13.0 + (prog * 55.0) % 80.0;
+        const p = new THREE.Vector3(d * Math.cos(2.45), -d * 0.32, d * Math.sin(2.45));
+        const pts = []; for (let i = 0; i <= 30; i++) { const di = 13.0 + i * 1.9; pts.push(new THREE.Vector3(di * Math.cos(2.45), -di * 0.32, di * Math.sin(2.45))); }
+        return { p, pts };
+    });
+
+    addMission("rosetta", "#38BDF8", (prog) => {
+        const a = prog * Math.PI * 4;
+        const r = 21.0 + 4.0 * Math.sin(a * 0.5);
+        const p = new THREE.Vector3(r * Math.cos(a), 1.2 * Math.sin(a), r * Math.sin(a));
+        const pts = []; for (let i = 0; i <= 40; i++) { const ai = (i / 40) * Math.PI * 2; const ri = 21.0 + 4.0 * Math.sin(ai * 0.5); pts.push(new THREE.Vector3(ri * Math.cos(ai), 1.2 * Math.sin(ai), ri * Math.sin(ai))); }
+        return { p, pts };
+    });
+
+    // Navigation Targeting
+    let targetBodyId = "sun";
+    window.navTo = function(id, btn) {
+        targetBodyId = id;
+        document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        if (id === 'sun') controls.target.set(0, 0, 0);
+        else if (id === 'Moon') controls.target.copy(moonObject.pos);
+        else if (planetObjects[id]) controls.target.copy(planetObjects[id].pos);
+    };
+
+    // Modal Fact Sheet Toggling
+    const modal = document.getElementById('fact-sheet-card');
+    let activeMis = null;
+
+    window.toggleDossier = function(id, btn) {
+        if (activeMis === id && modal.style.display === 'block') {
+            closeDossier();
+            return;
+        }
+        const m = MISSIONS_DB[id];
+        if (!m) return;
+
+        activeMis = id;
+        document.querySelectorAll('.btn-mis').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        document.getElementById('d-title').innerText = m.name;
+        document.getElementById('d-subtitle').innerText = m.subtitle;
+        document.getElementById('d-agency').innerText = m.agency;
+        document.getElementById('d-launcher').innerText = m.launcher;
+        document.getElementById('d-date').innerText = m.date;
+        document.getElementById('d-dest').innerText = m.dest;
+        document.getElementById('d-desc').innerText = m.desc;
+
+        modal.style.display = 'block';
+    };
+
+    window.closeDossier = function() {
+        modal.style.display = 'none';
+        activeMis = null;
+        document.querySelectorAll('.btn-mis').forEach(b => b.classList.remove('active'));
+    };
+
+    // Animation & Speed Engine
+    let simSpeed = 30.0;
+    let isRunning = true;
+    document.getElementById('slider-speed').oninput = (e) => {
+        simSpeed = parseFloat(e.target.value);
+        document.getElementById('val-speed').innerText = `${simSpeed.toFixed(1)} days/sec`;
+    };
+
+    document.getElementById('btn-toggle-motion').onclick = () => {
+        isRunning = !isRunning;
+        document.getElementById('btn-toggle-motion').innerText = isRunning ? '⏸ Pause Motion' : '▶ Resume Motion';
+    };
+
+    let lastTime = performance.now();
+    let animProgress = 0.0;
+    let planetDays = 0.0;
+
+    function animate(now) {
+        requestAnimationFrame(animate);
+        const dt = (now - lastTime) / 1000.0;
+        lastTime = now;
+
+        if (isRunning) {
+            animProgress += dt * (simSpeed / 30.0) * 0.04;
+            planetDays += dt * simSpeed;
+
+            // 1. Move Planets
+            Object.values(planetObjects).forEach(p => {
+                const angle = ((planetDays / p.config.period) * Math.PI * 2) % (Math.PI * 2);
+                const px = p.config.a * Math.cos(angle);
+                const pz = p.config.a * Math.sin(angle);
+                p.pos.set(px, 0, pz);
+                p.mesh.position.copy(p.pos);
+                p.mesh.rotation.y += 0.02;
+                p.label.position.set(px, p.config.size + 0.4, pz);
+            });
+
+            // 2. Move Moon
+            const ePos = planetObjects["Earth"].pos;
+            moonOrbitGroup.position.copy(ePos);
+            const mAngle = ((planetDays / 27.32) * Math.PI * 2) % (Math.PI * 2);
+            const mx = 1.2 * Math.cos(mAngle);
+            const mz = 1.2 * Math.sin(mAngle);
+            moonMesh.position.set(mx, 0.1 * Math.sin(mAngle), mz);
+            moonLabel.position.set(mx, 0.35, mz);
+            moonObject.pos.set(ePos.x + mx, ePos.y + 0.1 * Math.sin(mAngle), ePos.z + mz);
+
+            // 3. Move Spacecraft (Bound to Moving Planets)
+            dynamicMissions.forEach(a => {
+                const res = a.updater(animProgress);
+                a.probe.position.copy(res.p);
+                a.probe.rotation.y += 0.01;
+                a.label.position.set(res.p.x, res.p.y + 0.55, res.p.z);
+                if (res.pts && res.pts.length > 1) {
+                    a.trackLine.geometry.setFromPoints(res.pts);
+                    a.trackLine.computeLineDistances();
+                }
+            });
+
+            // 4. Track Camera Target
+            if (targetBodyId === 'Moon') controls.target.copy(moonObject.pos);
+            else if (targetBodyId !== 'sun' && planetObjects[targetBodyId]) controls.target.copy(planetObjects[targetBodyId].pos);
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    window.onresize = () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    };
+
+    animate(performance.now());
+</script>
+</body></html>

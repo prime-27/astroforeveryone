@@ -1,0 +1,205 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>28 Nakshatras (Including Abhijit) &amp; Coordinate Converter Laboratory</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 800px; position: relative; background: #03060B; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; display: flex; flex-direction: column;">
+    
+    <!-- Top Header & Author Badge -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(13, 17, 23, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 12px 18px; z-index: 100;">
+        <div>
+            <h2 style="font-size: 1.15rem; color: #FBBF24; margin: 0; font-weight: 700;">28 Nakshatras (Including Abhijit) & Coordinate Converter Laboratory</h2>
+            <p style="font-size: 0.7rem; color: #8B949E; margin: 2px 0 0 0;">Classical Ecliptic Segments to Modern Equatorial Coordinates</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+            <div style="font-size: 0.9rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div style="display: grid; grid-template-columns: 320px 1fr 360px; flex: 1; overflow: hidden;">
+        
+        <!-- Left Panel: Nakshatra Selection List -->
+        <div style="background: rgba(13, 17, 23, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Select Nakshatra (1 to 28)</div>
+            <div id="nakshatra-list" style="display: flex; flex-direction: column; gap: 3px;">
+                <!-- Dynamically populated via script -->
+            </div>
+        </div>
+
+        <!-- Center Panel: Interactive Star Map & Visualizer -->
+        <div style="position: relative; background: #03060B; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+            <canvas id="nakshatra-canvas" width="600" height="600" style="width: 100%; height: 100%; display: block;"></canvas>
+            
+            <div style="position: absolute; bottom: 12px; background: rgba(13,17,23,0.85); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; font-size: 0.72rem; text-align: center; pointer-events: none;">
+                <span style="color: #FBBF24; font-weight: 700;" id="hud-nak-name">Aśvinī (अश्विनी)</span> — Span: <span style="color: #38BDF8;">Ecliptic Segment</span>
+            </div>
+        </div>
+
+        <!-- Right Panel: Modern Equivalence & Mathematical Formulas -->
+        <div style="background: rgba(13, 17, 23, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 14px; overflow-y: auto; font-size: 0.74rem;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #FBBF24; font-weight: 700; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">Astronomical Profile</div>
+            
+            <div style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="background: rgba(255,255,255,0.03); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8B949E; display: block; font-size: 0.62rem;">Modern Star / Designation</span>
+                    <strong id="info-modern" style="color: #34D399; font-size: 0.85rem;">Beta Arietis (Sheratan)</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8B949E; display: block; font-size: 0.62rem;">Zodiac Sign (Rāśi) & Pada (Quarter)</span>
+                    <span id="info-pada" style="color: #E6EDF3; font-weight: 600;">Mesha (Aries) • Padas</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8B949E; display: block; font-size: 0.62rem;">Ruling Deity & Planet (Graha)</span>
+                    <span id="info-deity" style="color: #FBBF24; font-weight: 600;">Ashvini Kumaras (Healers) • Ketu</span>
+                </div>
+            </div>
+
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">Coordinate Conversion</div>
+            <div style="background: rgba(13, 17, 23, 0.7); padding: 8px; border-radius: 6px; font-family: monospace; font-size: 0.7rem; margin-bottom: 10px; border: 1px solid rgba(56, 189, 248, 0.2);">
+                <div style="margin-bottom: 3px;"><span style="color: #8B949E;">Ecliptic Longitude (λ):</span> <span id="calc-lambda" style="color: #FBBF24;">6.67°</span></div>
+                <div style="margin-bottom: 3px;"><span style="color: #8B949E;">Right Ascension (α):</span> <span id="calc-ra" style="color: #38BDF8;">01h 54m</span></div>
+                <div><span style="color: #8B949E;">Declination (δ):</span> <span id="calc-dec" style="color: #34D399;">+20.8°</span></div>
+            </div>
+
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #38BDF8; font-weight: 700; margin-bottom: 4px;">Mathematical Formulae</div>
+            <div style="font-size: 0.68rem; color: #C9D1D9; line-height: 1.45; background: rgba(255, 255, 255, 0.02); border-radius: 6px; padding: 8px; border-left: 3px solid #38BDF8;">
+                <p style="margin: 0 0 4px 0;"><strong style="color: #FBBF24;">1. Nakshatra Index Calculation:</strong><br>
+                Index = floor(Lambda / 13.333 deg) + 1</p>
+                <p style="margin: 0 0 4px 0;"><strong style="color: #FBBF24;">2. Pada (Quarter) Calculation:</strong><br>
+                Pada = floor((Lambda mod 13.333 deg) / 3.333 deg) + 1</p>
+                <p style="margin: 0;"><strong style="color: #FBBF24;">3. Ecliptic to Equatorial Conversion:</strong><br>
+                tan(alpha) = (sin(lambda) * cos(eps) - tan(beta) * sin(eps)) / cos(lambda)<br>
+                sin(delta) = sin(beta) * cos(eps) + cos(beta) * sin(eps) * sin(lambda)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Styles -->
+    <style>
+        .nak-btn { padding: 6px 10px; background: #161B22; border: 1px solid rgba(255,255,255,0.08); color: #C9D1D9; border-radius: 6px; font-size: 0.74rem; cursor: pointer; text-align: left; font-weight: 600; display: flex; justify-content: space-between; }
+        .nak-btn:hover { background: #21262D; border-color: #38BDF8; color: #38BDF8; }
+        .nak-btn.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+    </style>
+
+    <!-- Simulation Script -->
+    <script>
+        (function(){
+            const NAKSHATRAS = [
+                { id: 1, name: "Aśvinī (अश्विनी)", modern: "Beta & Alpha Arietis (Sheratan / Hamal)", deity: "Ashvini Kumaras", planet: "Ketu", ra: "02h 07m", dec: "+23.3°", lambda: 6.67 },
+                { id: 2, name: "Bharanī (भरणी)", modern: "35, 39, and 41 Arietis", deity: "Yama (God of Death)", planet: "Venus", ra: "02h 55m", dec: "+19.5°", lambda: 20.0 },
+                { id: 3, name: "Krittikā (कृत्तिका)", modern: "Pleiades Cluster (Eta Tauri)", deity: "Agni (God of Fire)", planet: "Sun", ra: "03h 47m", dec: "+24.1°", lambda: 33.33 },
+                { id: 4, name: "Rohiṇī (रोहिणी)", modern: "Aldebaran (Alpha Tauri)", deity: "Brahma / Prajapati", planet: "Moon", ra: "04h 35m", dec: "+16.5°", lambda: 46.67 },
+                { id: 5, name: "Mrigaśīrsha (मृगशीर्ष)", modern: "Lambda, Phi1, Phi2 Orionis", deity: "Soma (Moon God)", planet: "Mars", ra: "05h 35m", dec: "+09.9°", lambda: 60.0 },
+                { id: 6, name: "Ārdrā (आर्द्रा)", modern: "Betelgeuse (Alpha Orionis)", deity: "Rudra (Storm God)", planet: "Rahu", ra: "05h 55m", dec: "+07.4°", lambda: 73.33 },
+                { id: 7, name: "Punarvasu (पुनर्वसु)", modern: "Castor & Pollux (Alpha & Beta Geminorum)", deity: "Aditi (Mother of Gods)", planet: "Jupiter", ra: "07h 34m", dec: "+31.9°", lambda: 86.67 },
+                { id: 8, name: "Pushya (पुष्य)", modern: "Gamma, Delta, & Theta Cancri", deity: "Brihaspati (Teacher of Gods)", planet: "Saturn", ra: "08h 44m", dec: "+18.1°", lambda: 100.0 },
+                { id: 9, name: "Āśleṣā (आश्लेषा)", modern: "Delta, Epsilon, Zeta, Eta, Rho Hydrae", deity: "Sarpas (Serpents)", planet: "Mercury", ra: "08h 55m", dec: "+05.9°", lambda: 113.33 },
+                { id: 10, name: "Maghā (मघा)", modern: "Regulus (Alpha Leonis)", deity: "Pitris (Ancestors)", planet: "Ketu", ra: "10h 08m", dec: "+11.9°", lambda: 126.67 },
+                { id: 11, name: "Pūrva Phalgunī (पूर्व फाल्गुनी)", modern: "Delta & Theta Leonis", deity: "Bhaga (God of Fortune)", planet: "Venus", ra: "11h 14m", dec: "+14.5°", lambda: 140.0 },
+                { id: 12, name: "Uttara Phalgunī (उत्तर फाल्गुनी)", modern: "Denebola (Beta Leonis)", deity: "Aryaman (God of Patronage)", planet: "Sun", ra: "11h 49m", dec: "+14.5°", lambda: 153.33 },
+                { id: 13, name: "Hasta (हस्त)", modern: "Alpha, Beta, Gamma, Delta, & Epsilon Corvi", deity: "Savitr (Sun God)", planet: "Moon", ra: "12h 26m", dec: "-12.4°", lambda: 166.67 },
+                { id: 14, name: "Chitrā (चित्रा)", modern: "Spica (Alpha Virginis)", deity: "Tvashtar / Vishwakarma", planet: "Mars", ra: "13h 25m", dec: "-11.2°", lambda: 180.0 },
+                { id: 15, name: "Svātī (स्वाति)", modern: "Arcturus (Alpha Boötis)", deity: "Vayu (Wind God)", planet: "Rahu", ra: "14h 15m", dec: "+19.2°", lambda: 193.33 },
+                { id: 16, name: "Vishākhā (विशाखा)", modern: "Alpha, Beta, Gamma, & Iota Librae", deity: "Indragni (Indra & Agni)", planet: "Jupiter", ra: "14h 50m", dec: "-16.0°", lambda: 206.67 },
+                { id: 17, name: "Anurādhā (अनुराधा)", modern: "Beta, Delta, & Pi Scorpii", deity: "Mitra (God of Friendship)", planet: "Saturn", ra: "16h 05m", dec: "-19.8°", lambda: 220.0 },
+                { id: 18, name: "Jyeshṭhā (ज्येष्ठा)", modern: "Antares, Sigma, & Tau Scorpii", deity: "Indra (King of Gods)", planet: "Mercury", ra: "16h 29m", dec: "-26.4°", lambda: 233.33 },
+                { id: 19, name: "Mūla (मूल)", modern: "Epsilon, Zeta, Eta, Theta, Iota, Kappa, Lambda, Mu, Nu Scorpii", deity: "Nirriti (Goddess of Dissolution)", planet: "Ketu", ra: "17h 37m", dec: "-37.3°", lambda: 246.67 },
+                { id: 20, name: "Pūrva Āshāḍhā (पूर्वाषाढ़ा)", modern: "Delta & Epsilon Sagittarii", deity: "Apas (Waters)", planet: "Venus", ra: "18h 24m", dec: "-29.8°", lambda: 260.0 },
+                { id: 21, name: "Uttara Āshāḍhā (उत्तराषाढ़ा)", modern: "Sigma & Tau Sagittarii", deity: "Vishvadevas (Universal Gods)", planet: "Sun", ra: "18h 55m", dec: -26.3, lambda: 273.33 },
+                { id: 22, name: "Abhijit (अभिजित)", modern: "Vega (Alpha Lyrae)", deity: "Brahma", planet: "Moon", ra: "18h 36m", dec: "+38.8°", lambda: 280.6 },
+                { id: 23, name: "Śravaṇa (श्रवण)", modern: "Alpha, Beta, & Gamma Aquilae (Altair group)", deity: "Vishnu (Preserver)", planet: "Moon", ra: "19h 50m", dec: "+08.9°", lambda: 286.67 },
+                { id: 24, name: "Dhaniṣhṭhā (धनिष्ठा)", modern: "Alpha to Delta Delphini", deity: "Ashtavasus (Eight Elemental Gods)", planet: "Mars", ra: "20h 40m", dec: "+16.0°", lambda: 300.0 },
+                { id: 25, name: "Śatabhiṣhā (शतभिषा)", modern: "Gamma Aquarii", deity: "Varuna (Cosmic Waters)", planet: "Rahu", ra: "22h 10m", dec: "-01.9°", lambda: 313.33 },
+                { id: 26, name: "Pūrva Bhādrapadā (पूर्वभाद्रपदा)", modern: "Alpha & Beta Pegasi", deity: "Aja Ekapada (Unborn One)", planet: "Jupiter", ra: "00h 13m", dec: "+15.2°", lambda: 326.67 },
+                { id: 27, name: "Uttara Bhādrapadā (उत्तरभाद्रपदा)", modern: "Gamma Pegasi & Alpha Andromedae", deity: "Ahir Budhnya (Serpent of Deep)", planet: "Saturn", ra: "00h 08m", dec: "+15.2°", lambda: 340.0 },
+                { id: 28, name: "Revati (रेवती)", modern: "Zeta Piscium", deity: "Pushan (Nurturer)", planet: "Mercury", ra: "01h 13m", dec: "+07.6°", lambda: 353.33 }
+            ];
+
+            let selectedIndex = 0;
+            const listContainer = document.getElementById('nakshatra-list');
+            const canvas = document.getElementById('nakshatra-canvas');
+            const ctx = canvas.getContext('2d');
+
+            NAKSHATRAS.forEach((n, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `nak-btn ${idx === 0 ? 'active' : ''}`;
+                btn.innerHTML = `<span>${n.id}. ${n.name.split(' ')[0]}</span> <span style="color:#8B949E; font-size:0.65rem;">${n.lambda.toFixed(1)}°</span>`;
+                btn.onclick = () => selectNakshatra(idx);
+                listContainer.appendChild(btn);
+            });
+
+            window.selectNakshatra = function(idx) {
+                selectedIndex = idx;
+                document.querySelectorAll('.nak-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+                
+                const n = NAKSHATRAS[idx];
+                document.getElementById('hud-nak-name').innerText = n.name;
+                document.getElementById('info-modern').innerText = n.modern;
+                document.getElementById('info-pada').innerText = `Rāśi Segments • Padas`;
+                document.getElementById('info-deity').innerText = `${n.deity} • ${n.planet}`;
+                
+                document.getElementById('calc-lambda').innerText = `${n.lambda.toFixed(2)}°`;
+                document.getElementById('calc-ra').innerText = n.ra;
+                document.getElementById('calc-dec').innerText = n.dec;
+
+                drawCelestialWheel();
+            }
+
+            function drawCelestialWheel() {
+                ctx.clearRect(0, 0, 600, 600);
+                const cx = 300, cy = 300, rOuter = 240, rInner = 140;
+
+                NAKSHATRAS.forEach((n, idx) => {
+                    const startAngle = (n.lambda - 13.333) * (Math.PI / 180) - Math.PI/2;
+                    const endAngle = n.lambda * (Math.PI / 180) - Math.PI/2;
+                    
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, rOuter, startAngle, endAngle);
+                    ctx.arc(cx, cy, rInner, endAngle, startAngle, true);
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = idx === selectedIndex ? 'rgba(2, 132, 199, 0.35)' : (idx % 2 === 0 ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.05)');
+                    ctx.fill();
+                    ctx.strokeStyle = idx === selectedIndex ? '#38BDF8' : 'rgba(255, 255, 255, 0.1)';
+                    ctx.lineWidth = idx === selectedIndex ? 2 : 1;
+                    ctx.stroke();
+
+                    const midAngle = (startAngle + endAngle) / 2;
+                    const lx = cx + (rOuter + 22) * Math.cos(midAngle);
+                    const ly = cy + (rOuter + 22) * Math.sin(midAngle);
+                    
+                    ctx.fillStyle = idx === selectedIndex ? '#FBBF24' : '#8B949E';
+                    ctx.font = '9px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(n.id, lx, ly);
+                });
+
+                const activeN = NAKSHATRAS[selectedIndex];
+                const targetAngle = (activeN.lambda - 6.666) * (Math.PI / 180) - Math.PI/2;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + (rOuter + 10) * Math.cos(targetAngle), cy + (rOuter + 10) * Math.sin(targetAngle));
+                ctx.strokeStyle = '#FBBF24';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#E6EDF3';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Krāntivritta (Ecliptic)', cx, cy - 12);
+                ctx.font = '10px sans-serif';
+                ctx.fillStyle = '#8B949E';
+                ctx.fillText('28 Lunar Mansions', cx, cy + 8);
+            }
+
+            selectNakshatra(0);
+        })();
+    </script>
+</div>
+</body></html>

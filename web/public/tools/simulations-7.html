@@ -1,0 +1,248 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lunar Crater Formation</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="crater-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 320px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #ECEFF1; margin-bottom: 2px;">Lunar Crater Formation</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Hypervelocity Ballistic Deformation</p>
+
+        <button id="btn-fire-crater" style="width: 100%; padding: 8px; background: #E11D48; border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; margin-bottom: 4px;">💥 Launch Projectile</button>
+        <button id="btn-reset-crater" style="width: 100%; padding: 5px; background: #21262D; border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; border-radius: 6px; font-size: 0.72rem; cursor: pointer; margin-bottom: 8px;">🔄 Reset Surface</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Presets</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-crater-opt active" onclick="setCraterPreset('simple', this)">Simple Bowl</button>
+            <button class="btn-crater-opt" onclick="setCraterPreset('complex', this)">Complex Peak</button>
+            <button class="btn-crater-opt" onclick="setCraterPreset('oblique', this)">Oblique Grazing</button>
+            <button class="btn-crater-opt" onclick="setCraterPreset('basin', this)">Multi-Ring Basin</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Velocity:</span><span id="txt-vel" style="color: #FBBF24; font-weight: 600;">20.0 km/s</span>
+            </div>
+            <input type="range" id="rng-vel" min="2" max="72" step="1" value="20" style="width: 100%; accent-color: #FBBF24;">
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Impact Angle:</span><span id="txt-ang" style="color: #FBBF24; font-weight: 600;">45.0°</span>
+            </div>
+            <input type="range" id="rng-ang" min="5" max="90" step="1" value="45" style="width: 100%; accent-color: #FBBF24;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Diameter:</span><span id="txt-dia" style="color: #FBBF24; font-weight: 600;">250 m</span>
+            </div>
+            <input type="range" id="rng-dia" min="20" max="2500" step="10" value="250" style="width: 100%; accent-color: #FBBF24;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Camera Views</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;">
+            <button class="btn-crater-opt" onclick="setCraterCam('iso')">Isometric</button>
+            <button class="btn-crater-opt" onclick="setCraterCam('cross')">Profile</button>
+            <button class="btn-crater-opt" onclick="setCraterCam('top')">Top-Down</button>
+        </div>
+    </div>
+
+    <!-- Bottom Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 330px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">IMPACT TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Morphology:</span><span id="c-morph" style="color:#FBBF24; font-weight:600;">Complex Peak</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Crater Diameter:</span><span id="c-diam" style="color:#58A6FF; font-weight:600;">4.82 km</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Crater Depth:</span><span id="c-depth" style="color:#58A6FF; font-weight:600;">964 m</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Energy Released:</span><span id="c-energy" style="color:#F43F5E; font-weight:600;">351 MT TNT</span></div>
+    </div>
+
+    <style>
+        .btn-crater-opt { padding: 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .btn-crater-opt:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-crater-opt.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+    </style>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const container = document.getElementById('crater-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 22, 28);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.25));
+        const sun = new THREE.DirectionalLight(0xFFFFFF, 2.5);
+        sun.position.set(40, 20, 30);
+        scene.add(sun);
+
+        // Terrain
+        const GRID = 140; const W = 36.0;
+        const geo = new THREE.PlaneGeometry(W, W, GRID, GRID);
+        geo.rotateX(-Math.PI / 2);
+        const pos = geo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i); const z = pos.getZ(i);
+            pos.setY(i, Math.sin(x * 0.4) * Math.cos(z * 0.4) * 0.15 + (Math.random() - 0.5) * 0.04);
+        }
+        geo.computeVertexNormals();
+
+        const mat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.85 });
+        const mesh = new THREE.Mesh(geo, mat);
+        scene.add(mesh);
+
+        // Projectile & Line
+        const proj = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5, 1), new THREE.MeshStandardMaterial({ color: 0x94A3B8 }));
+        proj.visible = false;
+        scene.add(proj);
+        const traj = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: 0xF43F5E, dashSize: 0.4, gapSize: 0.2, linewidth: 2 }));
+        scene.add(traj);
+
+        // State
+        let velKms = 20; let angDeg = 45; let diaM = 250;
+        let isFlying = false; let fTime = 0; let fStart = new THREE.Vector3(); let fEnd = new THREE.Vector3(0,0,0);
+
+        function getPhysics() {
+            const rad = angDeg * Math.PI / 180;
+            const vol = (4/3) * Math.PI * Math.pow(diaM/2, 3);
+            const mass = vol * 3000;
+            const joules = 0.5 * mass * Math.pow(velKms * 1000, 2);
+            const mt = joules / 4.184e15;
+            let crRadiusM = 1.2 * Math.pow(joules / 1e12, 0.28) * Math.pow(Math.sin(rad), 0.33) * 12.0;
+            const crDiamKm = (crRadiusM * 2) / 1000;
+            const meshR = Math.min(12, Math.max(0.6, crRadiusM / 150));
+            const isComplex = crDiamKm >= 15 || meshR >= 3.2;
+            const isMulti = crDiamKm >= 140 || meshR >= 7.5;
+            const isObl = angDeg < 20;
+            const depthM = (isComplex ? 0.15 : 0.20) * crRadiusM * 2;
+            return { joules, mt, crDiamKm, depthM, meshR, isComplex, isMulti, isObl };
+        }
+
+        function deform(phys) {
+            const R_c = phys.meshR;
+            const dScale = Math.min(4.5, R_c * 0.45);
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i); const z = pos.getZ(i);
+                let dist = Math.sqrt(x*x + z*z);
+                if (phys.isObl) { dist = Math.sqrt(Math.pow(x / (1 + (25 - angDeg) * 0.04), 2) + z*z); }
+
+                if (dist < R_c * 2.2) {
+                    const norm = dist / R_c;
+                    let dy = 0;
+                    if (norm < 1.0) {
+                        dy = -dScale * (1.0 - Math.pow(norm, 2));
+                        if (phys.isComplex && norm < 0.35) dy += dScale * 0.75 * Math.pow(1 - (norm/0.35), 2);
+                        if (phys.isMulti && norm > 0.45 && norm < 0.65) dy += dScale * 0.35 * (1 - Math.abs(norm - 0.55) / 0.1);
+                    } else if (norm <= 1.55) {
+                        dy = (dScale * 0.28) * Math.max(0, 1 - Math.abs(norm - 1.12) / 0.43);
+                    }
+                    pos.setY(i, pos.getY(i) + dy);
+                }
+            }
+            pos.needsUpdate = true;
+            geo.computeVertexNormals();
+        }
+
+        function updateHUD(p) {
+            let m = "Simple Bowl";
+            if (p.isMulti) m = "Multi-Ring Basin";
+            else if (p.isComplex) m = "Complex (Central Peak)";
+            if (p.isObl) m = "Oblique (Elliptical)";
+
+            document.getElementById('c-morph').innerText = m;
+            document.getElementById('c-diam').innerText = p.crDiamKm.toFixed(2) + " km";
+            document.getElementById('c-depth').innerText = p.depthM.toFixed(0) + " m";
+            document.getElementById('c-energy').innerText = (p.mt >= 1000 ? (p.mt/1000).toFixed(1) + ' GT' : p.mt.toFixed(0) + ' MT') + ' TNT';
+        }
+
+        function fire() {
+            reset();
+            const rad = angDeg * Math.PI / 180;
+            fStart.set(-24 * Math.cos(rad), 24 * Math.sin(rad), 0);
+            proj.position.copy(fStart);
+            proj.visible = true;
+            traj.geometry.setFromPoints([fStart, fEnd]);
+            traj.computeLineDistances();
+            isFlying = true; fTime = 0;
+            updateHUD(getPhysics());
+        }
+
+        function reset() {
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i); const z = pos.getZ(i);
+                pos.setY(i, Math.sin(x * 0.4) * Math.cos(z * 0.4) * 0.15 + (Math.random() - 0.5) * 0.04);
+            }
+            pos.needsUpdate = true;
+            geo.computeVertexNormals();
+            proj.visible = false;
+            traj.geometry.setFromPoints([]);
+        }
+
+        // Event Bindings
+        document.getElementById('btn-fire-crater').onclick = fire;
+        document.getElementById('btn-reset-crater').onclick = reset;
+        document.getElementById('rng-vel').oninput = (e) => { velKms = parseFloat(e.target.value); document.getElementById('txt-vel').innerText = velKms.toFixed(1) + " km/s"; };
+        document.getElementById('rng-ang').oninput = (e) => { angDeg = parseFloat(e.target.value); document.getElementById('txt-ang').innerText = angDeg.toFixed(1) + "°"; };
+        document.getElementById('rng-dia').oninput = (e) => { diaM = parseFloat(e.target.value); document.getElementById('txt-dia').innerText = diaM + " m"; };
+
+        window.setCraterPreset = function(type, btn) {
+            document.querySelectorAll('.btn-crater-opt').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            if (type === 'simple') { velKms = 16; angDeg = 45; diaM = 80; }
+            if (type === 'complex') { velKms = 22; angDeg = 50; diaM = 450; }
+            if (type === 'oblique') { velKms = 26; angDeg = 10; diaM = 300; }
+            if (type === 'basin') { velKms = 35; angDeg = 60; diaM = 2200; }
+            document.getElementById('rng-vel').value = velKms; document.getElementById('txt-vel').innerText = velKms + " km/s";
+            document.getElementById('rng-ang').value = angDeg; document.getElementById('txt-ang').innerText = angDeg + "°";
+            document.getElementById('rng-dia').value = diaM; document.getElementById('txt-dia').innerText = diaM + " m";
+            fire();
+        };
+
+        window.setCraterCam = function(mode) {
+            if (mode === 'iso') { camera.position.set(0, 22, 28); controls.target.set(0,0,0); }
+            if (mode === 'cross') { camera.position.set(0, 3.5, 24); controls.target.set(0,-0.5,0); }
+            if (mode === 'top') { camera.position.set(0, 36, 0.1); controls.target.set(0,0,0); }
+        };
+
+        let last = performance.now();
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - last) / 1000; last = now;
+
+            if (isFlying) {
+                fTime += dt * (velKms * 0.08);
+                if (fTime < 1.0) {
+                    proj.position.lerpVectors(fStart, fEnd, fTime);
+                } else {
+                    proj.visible = false;
+                    isFlying = false;
+                    deform(getPhysics());
+                }
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        loop(performance.now());
+        fire();
+    })();
+</script>
+</body></html>

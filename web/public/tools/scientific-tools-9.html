@@ -1,0 +1,273 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Legacy of Indian Astronomy — Public Interactive Laboratory</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 820px; position: relative; background: #03060B; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 14px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; display: flex; flex-direction: column;">
+    
+    <!-- Top Header & Author Badge -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(13, 17, 23, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 12px 18px; z-index: 100;">
+        <div>
+            <h2 style="font-size: 1.1rem; color: #FBBF24; margin: 0; font-weight: 700;">The Legacy of Indian Astronomy — Public Interactive Laboratory</h2>
+            <p style="font-size: 0.68rem; color: #8B949E; margin: 2px 0 0 0;">Positional Astronomy, Pre-Siddhantic Yugas, Siddhantic Epicycles & Katapayadi Decoder</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+            <div style="font-size: 0.9rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs for Sections -->
+    <div style="display: flex; background: rgba(13, 17, 23, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 12px; gap: 8px;">
+        <button class="mod-tab active" onclick="switchModule(1)">Section 1: Positional & Coordinates</button>
+        <button class="mod-tab" onclick="switchModule(2)">Section 2: Pre-Siddhantic (5-Yr Yuga)</button>
+        <button class="mod-tab" onclick="switchModule(3)">Section 3: Siddhantic Epicycles & True Motion</button>
+        <button class="mod-tab" onclick="switchModule(4)">Section 3b: Katapayadi Decoder</button>
+    </div>
+
+    <!-- Content Workspace -->
+    <div style="flex: 1; position: relative; overflow: hidden; display: flex;">
+
+        <!-- MODULE 1 VIEW: Positional Astronomy & Ecliptic Markers -->
+        <div id="view-mod1" class="module-view active" style="width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 340px;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #03060B;">
+                <canvas id="canvas-mod1" width="700" height="600" style="width: 100%; height: 100%;"></canvas>
+            </div>
+            <div style="background: rgba(13,17,23,0.95); border-left: 1px solid rgba(255,255,255,0.1); padding: 16px; overflow-y: auto;">
+                <h3 style="font-size: 0.95rem; color: #FBBF24; margin-top: 0;">Section 1: Celestial Sphere & Coordinates</h3>
+                <p style="font-size: 0.72rem; color: #C9D1D9; line-height: 1.4;">Explore markers in the sky: the Ecliptic (Krāntivritta), Celestial Equator (Vishuvadvritta), and Equinox Precession (Ayanachala).</p>
+                
+                <div style="margin-top: 12px; font-size: 0.74rem;">
+                    <label style="display:block; color:#79C0FF; font-weight:700; margin-bottom:4px;">Obliquity / Tilt (ε = 23.44°):</label>
+                    <input type="range" id="m1-tilt" min="20" max="26" step="0.1" value="23.44" style="width:100%; accent-color:#FBBF24;">
+                </div>
+                <div style="margin-top: 12px; font-size: 0.74rem;">
+                    <label style="display:block; color:#79C0FF; font-weight:700; margin-bottom:4px;">Sun Ecliptic Longitude (λ):</label>
+                    <input type="range" id="m1-sun" min="0" max="360" step="1" value="45" style="width:100%; accent-color:#38BDF8;">
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 2 VIEW: Pre-Siddhantic 5-Year Yuga & Nakshatras -->
+        <div id="view-mod2" class="module-view" style="width: 100%; height: 100%; display: none; grid-template-columns: 1fr 340px;">
+            <div style="padding: 20px; overflow-y: auto;">
+                <h3 style="font-size: 1.05rem; color: #FBBF24; margin-top: 0;">Section 2: Pre-Siddhantic Astronomy (Vedanga Jyotisha)</h3>
+                <p style="font-size: 0.76rem; color: #C9D1D9; line-height: 1.45;">The 5-year Yuga system coordinates solar years with lunar months (Adhikamasa / intercalary months). Select a year in the 5-year cycle below:</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 14px 0;">
+                    <button class="yuga-btn active" onclick="setYugaYear(1)">Samvatsara 1 (First)</button>
+                    <button class="yuga-btn" onclick="setYugaYear(2)">Parivatsara 2</button>
+                    <button class="yuga-btn" onclick="setYugaYear(3)">Idavatsara 3</button>
+                    <button class="yuga-btn" onclick="setYugaYear(4)">Anuvatsara 4</button>
+                    <button class="yuga-btn" onclick="setYugaYear(5)">Idvatsara 5</button>
+                </div>
+
+                <div id="yuga-details" style="background: rgba(13,17,23,0.8); border: 1px solid rgba(56,189,248,0.2); border-radius: 8px; padding: 12px; font-size: 0.76rem;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            <div style="background: rgba(13,17,23,0.95); border-left: 1px solid rgba(255,255,255,0.1); padding: 16px; overflow-y: auto;">
+                <h4 style="font-size: 0.85rem; color: #38BDF8; margin-top:0;">Vedanga Time Units</h4>
+                <ul style="font-size: 0.72rem; color: #C9D1D9; padding-left: 16px; line-height: 1.5;">
+                    <li><b>1 Yuga</b> = 5 Solar Years</li>
+                    <li><b>60 Solar Months</b> = 62 Synodic Lunar Months</li>
+                    <li><b>Tithi</b> = Lunar day (1/30th of synodic month)</li>
+                    <li><b>Nakshatras</b> = 27 stellar segments (13° 20' each)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- MODULE 3 VIEW: Siddhantic Epicycles & True Motion -->
+        <div id="view-mod3" class="module-view" style="width: 100%; height: 100%; display: none; grid-template-columns: 1fr 340px;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #03060B;">
+                <canvas id="canvas-mod3" width="700" height="600" style="width: 100%; height: 100%;"></canvas>
+            </div>
+            <div style="background: rgba(13,17,23,0.95); border-left: 1px solid rgba(255,255,255,0.1); padding: 16px; overflow-y: auto;">
+                <h3 style="font-size: 0.95rem; color: #FBBF24; margin-top: 0;">Section 3: Mean vs. True Motion (Manda & Shighra)</h3>
+                <p style="font-size: 0.72rem; color: #C9D1D9; line-height: 1.4;">Siddhantic astronomers (Aryabhata, Brahmagupta, Bhaskara) applied epicyclic corrections (Mandaphala and Shighraphala) to convert mean planetary positions into true observable positions.</p>
+                
+                <div style="margin-top: 12px; font-size: 0.74rem;">
+                    <label style="display:block; color:#79C0FF; font-weight:700; margin-bottom:4px;">Epicycle Anomaly Angle:</label>
+                    <input type="range" id="m3-anomaly" min="0" max="360" step="1" value="0" style="width:100%; accent-color:#34D399;">
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 3B VIEW: Katapayadi System Decoder -->
+        <div id="view-mod3b" class="module-view" style="width: 100%; height: 100%; display: none; grid-template-columns: 1fr 340px;">
+            <div style="padding: 20px; overflow-y: auto;">
+                <h3 style="font-size: 1.05rem; color: #FBBF24; margin-top: 0;">Katapayadi Numerical Cipher System</h3>
+                <p style="font-size: 0.76rem; color: #C9D1D9; line-height: 1.45;">An ancient Indian system of numerical representation used in astronomical treatises to encode constants (like Sine tables and π) into memorable verses or poetry.</p>
+                
+                <div style="margin: 14px 0;">
+                    <label style="display:block; font-size:0.75rem; color:#79C0FF; font-weight:700; margin-bottom:4px;">Enter Sanskrit/Indian Word/Verse:</label>
+                    <input type="text" id="kata-input" value="भद्रवर्षं" style="width: 100%; padding: 8px; background: #161B22; border: 1px solid rgba(255,255,255,0.2); color: #FFF; border-radius: 6px; font-size: 0.9rem;" oninput="decodeKatapayadi()">
+                </div>
+
+                <div style="background: rgba(13,17,23,0.9); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 14px;">
+                    <div style="font-size: 0.68rem; text-transform: uppercase; color: #8B949E; margin-bottom: 4px;">Decoded Numerical Value (Reversed Order)</div>
+                    <div id="kata-output" style="font-size: 1.6rem; color: #34D399; font-weight: 700; font-family: monospace;">--</div>
+                </div>
+            </div>
+            <div style="background: rgba(13,17,23,0.95); border-left: 1px solid rgba(255,255,255,0.1); padding: 16px; overflow-y: auto; font-size: 0.72rem;">
+                <h4 style="font-size: 0.85rem; color: #38BDF8; margin-top:0;">Rule Table</h4>
+                <p style="color: #C9D1D9; line-height: 1.4;">
+                    • <b>Ka-varga (क ट प य):</b> 1 to 5<br>
+                    • <b>Ta-varga (ट):</b> 1 to 5<br>
+                    • <b>Pa-varga (प):</b> 1 to 5<br>
+                    • <b>Ya-varga (य र ल व श ष स ह):</b> 1 to 8<br>
+                    *Note: Read consonants right-to-left to form numbers. Vowels attached to consonants are ignored.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Styles -->
+    <style>
+        .mod-tab { background: #161B22; border: 1px solid rgba(255,255,255,0.08); color: #8B949E; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; font-weight: 600; }
+        .mod-tab:hover { background: #21262D; color: #38BDF8; }
+        .mod-tab.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+        .yuga-btn { background: #161B22; border: 1px solid rgba(255,255,255,0.1); color: #C9D1D9; padding: 6px 4px; border-radius: 6px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .yuga-btn.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: 700; }
+    </style>
+
+    <!-- Lab Simulation Script -->
+    <script>
+        (function(){
+            window.switchModule = function(num) {
+                document.querySelectorAll('.mod-tab').forEach((t, i) => t.classList.toggle('active', i === num - 1));
+                document.querySelectorAll('.module-view').forEach((v, i) => {
+                    v.style.display = (i === num - 1) ? 'grid' : 'none';
+                });
+                if(num === 1) drawMod1();
+                if(num === 3) drawMod3();
+            };
+
+            // Section 1 Canvas Renderer
+            const cv1 = document.getElementById('canvas-mod1');
+            const ctx1 = cv1.getContext('2d');
+            function drawMod1() {
+                ctx1.clearRect(0, 0, 700, 600);
+                const cx = 350, cy = 300, r = 180;
+                
+                // Celestial Sphere background
+                ctx1.beginPath();
+                ctx1.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx1.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+                ctx1.lineWidth = 1.5;
+                ctx1.stroke();
+
+                // Equator
+                ctx1.beginPath();
+                ctx1.ellipse(cx, cy, r, r * 0.3, 0, 0, Math.PI * 2);
+                ctx1.strokeStyle = '#00E5FF';
+                ctx1.stroke();
+
+                // Ecliptic (Krāntivritta) tilted by epsilon
+                const tilt = parseFloat(document.getElementById('m1-tilt').value) * (Math.PI / 180);
+                ctx1.save();
+                ctx1.translate(cx, cy);
+                ctx1.rotate(tilt);
+                ctx1.beginPath();
+                ctx1.ellipse(0, 0, r, r * 0.3, 0, 0, Math.PI * 2);
+                ctx1.strokeStyle = '#FBBF24';
+                ctx1.stroke();
+                ctx1.restore();
+
+                // Labels
+                ctx1.fillStyle = '#E6EDF3';
+                ctx1.font = '11px sans-serif';
+                ctx1.textAlign = 'center';
+                ctx1.fillText('Vishuvadvritta (Celestial Equator)', cx, cy + r * 0.35 + 15);
+                ctx1.fillStyle = '#FBBF24';
+                ctx1.fillText('Krāntivritta (Ecliptic Plane 23.4°)', cx, cy - r * 0.4 - 10);
+            }
+            document.getElementById('m1-tilt').oninput = drawMod1;
+            document.getElementById('m1-sun').oninput = drawMod1;
+
+            // Section 2: Yuga Year Info
+            window.setYugaYear = function(yr) {
+                document.querySelectorAll('.yuga-btn').forEach((b, i) => b.classList.toggle('active', i === yr - 1));
+                const data = %5b.html
+                    { name: "First Year (Samvatsara)", desc: "Starts with Chaitra month, 2 Adhikamasas (intercalary months) added across the 5-year cycle to align lunar phases with solar tropical years." },
+                    { name: "Second Year (Parivatsara)", desc: "Maintains synchronization between 12 Siddhantic lunar months and the solar sidereal period." },
+                    { name: "Third Year (Idavatsara)", desc: "Mid-yuga milestone for calibration of equinoxes and solstice markers (Ayanas)." },
+                    { name: "Fourth Year (Anuvatsara)", desc: "Adjusts lunar phase drift against stellar Nakshatra positions." },
+                    { name: "Fifth Year (Idvatsara)", desc: "Concluding year of the Vedanga 5-year yuga before resetting the calendar cycle." }
+                ];
+                document.getElementById('yuga-details').innerHTML = `<strong style="color:#FBBF24; font-size:0.85rem;">${data[yr-1].name}</strong><p style="color:#C9D1D9; margin:6px 0 0 0; line-height:1.4;">${data[yr-1].desc}</p>`;
+            };
+            setYugaYear(1);
+
+            // Section 3 Canvas Renderer (Epicycles)
+            const cv3 = document.getElementById('canvas-mod3');
+            const ctx3 = cv3.getContext('2d');
+            function drawMod3() {
+                ctx3.clearRect(0, 0, 700, 600);
+                const cx = 350, cy = 300;
+                const an = parseFloat(document.getElementById('m3-anomaly').value) * (Math.PI / 180);
+
+                // Deferent circle
+                ctx3.beginPath();
+                ctx3.arc(cx, cy, 140, 0, Math.PI * 2);
+                ctx3.strokeStyle = 'rgba(52, 211, 153, 0.4)';
+                ctx3.lineWidth = 1.5;
+                ctx3.stroke();
+
+                // Epicycle center on deferent
+                const dcx = cx + 140 * Math.cos(an);
+                const dcy = cy + 140 * Math.sin(an);
+
+                // Epicycle circle
+                ctx3.beginPath();
+                ctx3.arc(dcx, dcy, 45, 0, Math.PI * 2);
+                ctx3.strokeStyle = '#FBBF24';
+                ctx3.stroke();
+
+                // Planet position on epicycle
+                const px = dcx + 45 * Math.cos(an * 2.5);
+                const py = dcy + 45 * Math.sin(an * 2.5);
+
+                ctx3.beginPath();
+                ctx3.arc(px, py, 7, 0, Math.PI * 2);
+                ctx3.fillStyle = '#EF4444';
+                ctx3.fill();
+
+                // Lines connecting
+                ctx3.beginPath();
+                ctx3.moveTo(cx, cy); ctx3.lineTo(dcx, dcy);
+                ctx3.moveTo(dcx, dcy); ctx3.lineTo(px, py);
+                ctx3.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx3.stroke();
+
+                ctx3.fillStyle = '#E6EDF3';
+                ctx3.font = '11px sans-serif';
+                ctx3.fillText('Earth (Center)', cx - 35, cy + 20);
+                ctx3.fillText('True Planet Position (Mandaphala correction)', px + 12, py);
+            }
+            document.getElementById('m3-anomaly').oninput = drawMod3;
+
+            // Section 3b: Katapayadi Decoder
+            window.decodeKatapayadi = function() {
+                const map = {
+                    'क':'1','ट':'1','প':'1','य':'1',
+                    'ख':'2','ठ':'2','फ':'2','र':'2',
+                    'ग':'3','ड':'3','ब':'3','ल':'3',
+                    'घ':'4','ढ':'4','भ':'4','व':'4',
+                    'ङ':'5','ण':'5','म':'5','श':'5',
+                    'च':'6','त':'6','ष':'6',
+                    'छ':'7','थ':'7','स':'7',
+                    'ज':'8','द':'8','ह':'8',
+                    'झ':'9','ध':'9',
+                    'ञ':'0','न':'0'
+                };
+                const val = document.getElementById('kata-input').value;
+                let res = '';
+                for (let char of val) {
+                    if (map[char]) res += map[char];
+                }
+                document.getElementById('kata-output').innerText = res ? res.split('').reverse().join('') : '0';
+            };
+            decodeKatapayadi();
+            drawMod1();
+        })();
+    </script>
+</div>
+</body></html>

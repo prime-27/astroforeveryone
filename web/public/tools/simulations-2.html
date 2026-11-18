@@ -1,0 +1,520 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>🌌 Stellar Cinema: Distinct Massive Death Pathways (Neutron Stars vs. Black Holes)</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 950px; margin: 0 auto; background: #030712; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 16px; padding: 22px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 20px 50px rgba(0,0,0,0.9); box-sizing: border-box;">
+    
+    <!-- Cinematic Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 style="font-size: 1.25rem; color: #FBBF24; margin: 0; font-weight: 700;">🌌 Stellar Cinema: Distinct Massive Death Pathways (Neutron Stars vs. Black Holes)</h2>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 3px 0 0 0;">An immersive 3D cinematic journey showcasing separate terminal fates for high-mass stars.</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #34D399; font-weight: 700; letter-spacing: 0.8px;">3D Director's Cut</div>
+            <div style="font-size: 0.85rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div style="display: grid; grid-template-columns: 270px 1fr; gap: 16px;">
+        
+        <!-- Left Control Panel -->
+        <div style="background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 0.74rem;">
+            <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; letter-spacing: 0.8px;">⚖️ Select Stellar Evolution Pathway</div>
+            
+            <button class="path-btn active" onclick="setDirectorPath('neutron', this)">1. High-Mass (8-25 M☉) → Neutron Star</button>
+            <button class="path-btn" onclick="setDirectorPath('blackhole', this)">2. Hyper-Massive (>25 M☉) → Black Hole</button>
+            <button class="path-btn" onclick="setDirectorPath('solar', this)">3. Solar Mass (1 M☉) → White Dwarf</button>
+            <button class="path-btn" onclick="setDirectorPath('reddwarf', this)">4. Red Dwarf (<0.5 M☉) → He Dwarf</button>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; color: #FBBF24; font-weight: 700; letter-spacing: 0.8px;">🎬 Slow Movie Playback</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button id="btn-director-play" onclick="toggleDirectorPlay()" style="background: #238636; border: 1px solid #2EA043; color: white; padding: 6px; border-radius: 6px; font-weight: 700; cursor: pointer;">▶ Play Movie</button>
+                    <button onclick="restartDirectorMovie()" style="background: #21262D; border: 1px solid rgba(255,255,255,0.15); color: #C9D1D9; padding: 6px; border-radius: 6px; font-weight: 700; cursor: pointer;">🔄 Restart</button>
+                </div>
+                <div>
+                    <label style="display: block; color: #8B949E; font-size: 0.68rem; margin-bottom: 2px;">Timeline Scrub (0 - 100%):</label>
+                    <input type="range" id="director-scrubber" min="0" max="100" step="0.2" value="0" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right 3D Viewport & Telemetry -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- 3D Canvas Viewport -->
+            <div style="position: relative; width: 100%; height: 290px; background: #02040A; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; overflow: hidden;">
+                <div id="director-canvas-container" style="width: 100%; height: 100%;"></div>
+                <div style="position: absolute; top: 8px; left: 10px; font-size: 0.62rem; color: #38BDF8; font-family: monospace; background: rgba(0,0,0,0.65); padding: 4px 8px; border-radius: 4px;" id="movie-act-indicator">
+                    Act I: Giant Molecular Cloud (Nebula)
+                </div>
+            </div>
+
+            <!-- Narrative Card -->
+            <div style="background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div id="movie-chapter-title" style="font-size: 1rem; color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">Chapter 1: The Giant Molecular Cloud (Nebula)</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 0.72rem;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.58rem;">Core Temperature</span>
+                        <span id="movie-temp" style="color: #34D399; font-weight: 700; font-family: monospace;">10 Kelvin</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.58rem;">Astrophysical Process</span>
+                        <span id="movie-process" style="color: #38BDF8; font-weight: 700; font-family: monospace;">Gravitational Condensation</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.58rem;">Timeline Epoch</span>
+                        <span id="movie-epoch" style="color: #FBBF24; font-weight: 700; font-family: monospace;">T = 0 Million Yrs</span>
+                    </div>
+                </div>
+
+                <p id="movie-desc" style="font-size: 0.74rem; color: #C9D1D9; margin: 0; line-height: 1.45;">
+                    Vast stellar nurseries composed of cold hydrogen gas and cosmic dust drift in interstellar space. Gravitational instabilities cause dense pockets within the nebula to fragment and contract inward.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Styles -->
+    <style>
+        .path-btn { padding: 7px 10px; background: #161B22; border: 1px solid rgba(255,255,255,0.08); color: #C9D1D9; border-radius: 6px; font-size: 0.72rem; cursor: pointer; text-align: left; font-weight: 600; }
+        .path-btn:hover { background: #21262D; border-color: #38BDF8; color: #38BDF8; }
+        .path-btn.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+    </style>
+
+    <!-- Three.js CDN Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Cinematic Epic Script Engine -->
+    <script>
+        let currentPath = 'neutron';
+        let isMoviePlaying = false;
+        let timelineProgress = 0.0; // 0.0 to 100.0%
+
+        const masterScript = {
+            'neutron': {
+                name: "High-Mass Evolution → Neutron Star Pathway",
+                acts: [
+                    {
+                        start: 0, end: 20,
+                        actName: "Act I: Stellar Nursery",
+                        title: "Chapter 1: Massive Molecular Cloud Collapse",
+                        temp: "100 K → 30M K", process: "Rapid Gravitational Infall", epoch: "T = 0 to 0.5 Myrs",
+                        desc: "Massive giant molecular clouds collapse at extreme speeds due to intense gravitational pull, birthing high-mass protostars.",
+                        renderType: "nebula_collapse"
+                    },
+                    {
+                        start: 20, end: 45,
+                        actName: "Act II: Blinding Blue Adulthood",
+                        title: "Chapter 2: Blue Supergiant Main Sequence (CNO Cycle)",
+                        temp: "35,000 K+", process: "CNO Catalytic Fusion", epoch: "T = 0.5 to 20 Million Yrs",
+                        desc: "Powered by the rapid CNO cycle, massive stars burn through their immense hydrogen reservoirs with ferocious luminosity and blinding blue-white radiance.",
+                        renderType: "blue_supergiant"
+                    },
+                    {
+                        start: 45, end: 70,
+                        actName: "Act III: Advanced Burning",
+                        title: "Chapter 3: Onion-Skin Core Collapse Stages",
+                        temp: "3 Billion K", process: "Multi-Stage Burning (He → Fe)", epoch: "T = 20.1 Million Yrs",
+                        desc: "Successive core collapses ignite heavier elements in concentric shells resembling an onion skin, culminating in an inert iron core.",
+                        renderType: "onion_supergiant"
+                    },
+                    {
+                        start: 70, end: 88,
+                        actName: "Act IV: Cataclysmic Blast",
+                        title: "Chapter 4: Type II Core-Collapse Supernova",
+                        temp: "Trillions of Degrees", process: "Explosive Nucleosynthesis", epoch: "Terminal Cataclysm",
+                        desc: "Iron core collapse generates a violent rebound shockwave (Supernova), scattering heavy elements across interstellar space.",
+                        renderType: "supernova_cataclysm"
+                    },
+                    {
+                        start: 88, end: 100,
+                        actName: "Act V: Terminal Remnant",
+                        title: "Chapter 5: Ultra-Dense Rotating Neutron Star (Pulsar)",
+                        temp: "10 Million K Surface", process: "Neutron Degeneracy & Magnetic Beams", epoch: "Post-Supernova",
+                        desc: "The collapsed core compresses protons and electrons into neutrons, forming a city-sized Neutron Star spinning rapidly with intense magnetic beams.",
+                        renderType: "neutron_star"
+                    }
+                ]
+            },
+            'blackhole': {
+                name: "Hyper-Massive Evolution → Black Hole Pathway",
+                acts: [
+                    {
+                        start: 0, end: 15,
+                        actName: "Act I: Hyper-Nursery",
+                        title: "Chapter 1: Massive Giant Cloud Collapse",
+                        temp: "100 K → 50M K", process: "Extreme Gravitational Infall", epoch: "T = 0 to 0.2 Myrs",
+                        desc: "An exceptionally massive gas cloud undergoes runaway gravitational collapse, forming an ultra-luminous hyper-giant protostar.",
+                        renderType: "nebula_collapse"
+                    },
+                    {
+                        start: 15, end: 35,
+                        actName: "Act II: Luminous Blue Hypergiant",
+                        title: "Chapter 2: Luminous Blue Variable (LBV)",
+                        temp: "50,000 K", process: "Extreme CNO Hydrogen Burning", epoch: "T = 0.2 to 5 Million Yrs",
+                        desc: "A short-lived, brilliant hypergiant shining with millions of times the luminosity of our Sun, shedding mass via violent stellar winds.",
+                        renderType: "blue_supergiant"
+                    },
+                    {
+                        start: 35, end: 60,
+                        actName: "Act III: Iron Core Instability",
+                        title: "Chapter 3: Photodisintegration & Runaway Collapse",
+                        temp: "5 Billion K", process: "Neutron Degeneracy Failure", epoch: "T = 5 Million Yrs",
+                        desc: "Exceeding the Tolman–Oppenheimer–Volkoff mass limit (~2.1 M☉), neutron degeneracy pressure fails entirely against gravity.",
+                        renderType: "onion_supergiant"
+                    },
+                    {
+                        start: 60, end: 80,
+                        actName: "Act IV: Hypernova & Gamma-Ray Burst",
+                        title: "Chapter 4: Hypernova Eruption",
+                        temp: "100 Billion K", process: "Relativistic Jet Ejection", epoch: "Terminal Collapse",
+                        desc: "A titanic hypernova explosion focuses relativistic jets of plasma outward while the center plunges inward.",
+                        renderType: "supernova_cataclysm"
+                    },
+                    {
+                        start: 80, end: 100,
+                        actName: "Act V: Terminal Remnant",
+                        title: "Chapter 5: Stellar-Mass Black Hole & Accretion Disk",
+                        temp: "Event Horizon & Ergosphere", process: "Gravitational Singularity", epoch: "Eternal Spacetime Warp",
+                        desc: "Gravity overwhelms all forces, tearing a hole in spacetime surrounded by a glowing, friction-heated accretion disk and relativistic particle jets.",
+                        renderType: "black_hole"
+                    }
+                ]
+            },
+            'solar': {
+                name: "Solar Mass Evolution → White Dwarf",
+                acts: [
+                    {
+                        start: 0, end: 25,
+                        actName: "Act I: Stellar Nursery",
+                        title: "Chapter 1: Solar Nebula Collapse",
+                        temp: "10 K → 10M K", process: "Gravitational Collapse", epoch: "T = 0 to 1 Myrs",
+                        desc: "Cold gas clouds fragment under gravity, forming a dense spinning protostellar core.",
+                        renderType: "nebula_collapse"
+                    },
+                    {
+                        start: 25, end: 60,
+                        actName: "Act II: Stable Adulthood",
+                        title: "Chapter 2: Main Sequence (Proton-Proton Fusion)",
+                        temp: "5,778 K (Surface)", process: "Core Hydrogen Fusion (p-p)", epoch: "T = 1 to 10 Billion Yrs",
+                        desc: "Stable hydrogen-to-helium fusion holds the star steady for billions of years.",
+                        renderType: "solar_main"
+                    },
+                    {
+                        start: 60, end: 82,
+                        actName: "Act III: Old Age & Expansion",
+                        title: "Chapter 3: Red Giant Phase",
+                        temp: "100 Million K (Core)", process: "Helium Core Fusion", epoch: "T = 10.5 Billion Yrs",
+                        desc: "Outer layers expand dramatically into a luminous Red Giant glowing with crimson radiance.",
+                        renderType: "red_giant"
+                    },
+                    {
+                        start: 82, end: 100,
+                        actName: "Act IV: Terminal Death",
+                        title: "Chapter 4: Planetary Nebula & White Dwarf",
+                        temp: "100,000 K (Core)", process: "Thermal Ejection & Degeneracy", epoch: "T = 11 Billion+ Yrs",
+                        desc: "Outer gaseous envelopes eject into space as a glowing Planetary Nebula, leaving a dense Carbon-Oxygen White Dwarf.",
+                        renderType: "planetary_nebula"
+                    }
+                ]
+            },
+            'reddwarf': {
+                name: "Low-Mass Red Dwarf Lineage",
+                acts: [
+                    {
+                        start: 0, end: 25,
+                        actName: "Act I: Gentle Nursery",
+                        title: "Chapter 1: Low-Mass Cloud Condensation",
+                        temp: "10 K → 5M K", process: "Gentle Contraction", epoch: "T = 0 to 5 Myrs",
+                        desc: "A cool molecular cloud condenses slowly under gravity, forming a compact protostellar core.",
+                        renderType: "nebula_collapse"
+                    },
+                    {
+                        start: 25, end: 80,
+                        actName: "Act II: Trillion-Year Adulthood",
+                        title: "Chapter 2: Convective Main Sequence",
+                        temp: "3,200 K", process: "Full Convective Burning", epoch: "T = 5 Myrs to 10 Trillion Yrs",
+                        desc: "Fully convective mixing circulates fuel, allowing the star to shine for trillions of years.",
+                        renderType: "red_dwarf_main"
+                    },
+                    {
+                        start: 80, end: 100,
+                        actName: "Act III: Terminal Death",
+                        title: "Chapter 3: Helium White Dwarf Remnant",
+                        temp: "Cooling Degenerate Core", process: "Thermal Cooling", epoch: "T = Beyond Trillions of Years",
+                        desc: "Having consumed its hydrogen, the star peacefully fades into a cooling Helium White Dwarf.",
+                        renderType: "red_dwarf_remnant"
+                    }
+                ]
+            }
+        };
+
+        window.setDirectorPath = function(pathKey, btn) {
+            document.querySelectorAll('.path-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            currentPath = pathKey;
+            timelineProgress = 0.0;
+            document.getElementById('director-scrubber').value = 0;
+            updateDirectorCinematic();
+        };
+
+        window.toggleDirectorPlay = function() {
+            isMoviePlaying = !isMoviePlaying;
+            document.getElementById('btn-director-play').innerText = isMoviePlaying ? "⏸ Pause" : "▶ Play Movie";
+            document.getElementById('movie-act-indicator').innerText = isMoviePlaying ? "Status: Playing Epic Movie..." : "Status: Paused";
+        };
+
+        window.restartDirectorMovie = function() {
+            isMoviePlaying = false;
+            timelineProgress = 0.0;
+            document.getElementById('director-scrubber').value = 0;
+            document.getElementById('btn-director-play').innerText = "▶ Play Movie";
+            document.getElementById('movie-act-indicator').innerText = "Status: Reset to T = 0";
+            updateDirectorCinematic();
+        };
+
+        const scrubber = document.getElementById('director-scrubber');
+        scrubber.oninput = (e) => {
+            isMoviePlaying = false;
+            document.getElementById('btn-director-play').innerText = "▶ Play Movie";
+            timelineProgress = parseFloat(e.target.value);
+            document.getElementById('movie-act-indicator').innerText = `Status: Scrubbing (${timelineProgress.toFixed(0)}%)`;
+            updateDirectorCinematic();
+        };
+
+        function updateDirectorCinematic() {
+            const lineage = masterScript[currentPath];
+            const acts = lineage.acts;
+
+            let activeAct = acts[0];
+            for (let i = 0; i < acts.length; i++) {
+                if (timelineProgress >= acts[i].start && timelineProgress <= acts[i].end) {
+                    activeAct = acts[i];
+                    break;
+                } else if (timelineProgress > acts[i].end) {
+                    activeAct = acts[i];
+                }
+            }
+
+            document.getElementById('movie-act-indicator').innerText = activeAct.actName;
+            document.getElementById('movie-chapter-title').innerText = activeAct.title;
+            document.getElementById('movie-temp').innerText = activeAct.temp;
+            document.getElementById('movie-process').innerText = activeAct.process;
+            document.getElementById('movie-epoch').innerText = activeAct.epoch;
+            document.getElementById('movie-desc').innerText = activeAct.desc;
+
+            rebuildDirector3DScene(activeAct.renderType, timelineProgress);
+        }
+
+        // Three.js 3D Setup
+        let scene, camera, renderer, controls;
+        let starCoreMesh = null;
+        let secondaryMesh = null;
+        let stellarParticles = null;
+
+        function initDirector3D() {
+            const container = document.getElementById('director-canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x02040A);
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 7.5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            scene.add(new THREE.AmbientLight(0xFFFFFF, 0.6));
+            const pLight = new THREE.PointLight(0xFFFFFF, 3.0, 50);
+            scene.add(pLight);
+
+            updateDirectorCinematic();
+            animateDirectorLoop();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        function clearDirectorObjects() {
+            if (starCoreMesh) { scene.remove(starCoreMesh); starCoreMesh = null; }
+            if (secondaryMesh) { scene.remove(secondaryMesh); secondaryMesh = null; }
+            if (stellarParticles) { scene.remove(stellarParticles); stellarParticles = null; }
+        }
+
+        function rebuildDirector3DScene(renderType, progress) {
+            clearDirectorObjects();
+            const sphereGeo = new THREE.SphereGeometry(1.5, 32, 32);
+
+            if (renderType === 'nebula_collapse') {
+                const count = 2000;
+                const geom = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count * 3; i += 3) {
+                    const spread = 4.5 - (progress * 0.025);
+                    positions[i] = (Math.random() - 0.5) * spread;
+                    positions[i+1] = (Math.random() - 0.5) * spread;
+                    positions[i+2] = (Math.random() - 0.5) * spread;
+                }
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                stellarParticles = new THREE.Points(geom, new THREE.PointsMaterial({ color: 0xA78BFA, size: 0.07, transparent: true, opacity: 0.75 }));
+                scene.add(stellarParticles);
+
+                starCoreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshBasicMaterial({ color: 0xFBBF24 }));
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'solar_main') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0xFDE047, roughness: 0.3, emissive: 0xCA8A04 }));
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'red_giant') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0xEF4444, roughness: 0.5, emissive: 0x991B1B }));
+                starCoreMesh.scale.set(2.3, 2.3, 2.3);
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'planetary_nebula') {
+                starCoreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
+                scene.add(starCoreMesh);
+
+                const count = 1800;
+                const geom = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count * 3; i += 3) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 1.3 + Math.random() * 1.0;
+                    positions[i] = Math.cos(angle) * r;
+                    positions[i+1] = (Math.random() - 0.5) * 0.6;
+                    positions[i+2] = Math.sin(angle) * r;
+                }
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                stellarParticles = new THREE.Points(geom, new THREE.PointsMaterial({ color: 0x38BDF8, size: 0.06, transparent: true, opacity: 0.85 }));
+                scene.add(stellarParticles);
+            }
+            else if (renderType === 'blue_supergiant') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0x38BDF8, roughness: 0.2, emissive: 0x0284C7 }));
+                starCoreMesh.scale.set(1.5, 1.5, 1.5);
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'onion_supergiant') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0xB45309, roughness: 0.4, emissive: 0x78350F, wireframe: true }));
+                starCoreMesh.scale.set(2.6, 2.6, 2.6);
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'supernova_cataclysm') {
+                const count = 3000;
+                const geom = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count * 3; i += 3) {
+                    const u = Math.random(), v = Math.random();
+                    const theta = u * 2.0 * Math.PI;
+                    const phi = Math.acos(2.0 * v - 1.0);
+                    const r = 0.5 + Math.random() * 3.2;
+                    positions[i] = r * Math.sin(phi) * Math.cos(theta);
+                    positions[i+1] = r * Math.sin(phi) * Math.sin(theta);
+                    positions[i+2] = r * Math.cos(phi);
+                }
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                stellarParticles = new THREE.Points(geom, new THREE.PointsMaterial({ color: 0xF59E0B, size: 0.08, transparent: true, opacity: 0.95 }));
+                scene.add(stellarParticles);
+
+                starCoreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), new THREE.MeshBasicMaterial({ color: 0x38BDF8 }));
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'neutron_star') {
+                starCoreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), new THREE.MeshStandardMaterial({ color: 0xE0F2FE, roughness: 0.1, emissive: 0x7DD3FC }));
+                scene.add(starCoreMesh);
+
+                const coneGeo = new THREE.ConeGeometry(0.3, 2.5, 16);
+                const coneMat = new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.6 });
+                const beam1 = new THREE.Mesh(coneGeo, coneMat);
+                beam1.position.y = 1.4;
+                const beam2 = new THREE.Mesh(coneGeo, coneMat);
+                beam2.position.y = -1.4;
+                beam2.rotation.z = Math.PI;
+
+                secondaryMesh = new THREE.Group();
+                secondaryMesh.add(beam1, beam2);
+                scene.add(secondaryMesh);
+            }
+            else if (renderType === 'black_hole') {
+                starCoreMesh = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                scene.add(starCoreMesh);
+
+                const count = 2000;
+                const geom = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count * 3; i += 3) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 0.9 + Math.random() * 1.8;
+                    positions[i] = Math.cos(angle) * r;
+                    positions[i+1] = (Math.random() - 0.5) * 0.12;
+                    positions[i+2] = Math.sin(angle) * r;
+                }
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                stellarParticles = new THREE.Points(geom, new THREE.PointsMaterial({ color: 0xFBBF24, size: 0.05, transparent: true, opacity: 0.9 }));
+                scene.add(stellarParticles);
+
+                const jetGeo = new THREE.ConeGeometry(0.12, 3.5, 16);
+                const jetMat = new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.7 });
+                const jet1 = new THREE.Mesh(jetGeo, jetMat);
+                jet1.position.y = 2.0;
+                const jet2 = new THREE.Mesh(jetGeo, jetMat);
+                jet2.position.y = -2.0;
+                jet2.rotation.z = Math.PI;
+
+                secondaryMesh = new THREE.Group();
+                secondaryMesh.add(jet1, jet2);
+                scene.add(secondaryMesh);
+            }
+            else if (renderType === 'red_dwarf_main') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0xDC2626, roughness: 0.4, emissive: 0x7F1D1D }));
+                starCoreMesh.scale.set(0.7, 0.7, 0.7);
+                scene.add(starCoreMesh);
+            }
+            else if (renderType === 'red_dwarf_remnant') {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.1, emissive: 0xCBD5E1 }));
+                starCoreMesh.scale.set(0.3, 0.3, 0.3);
+                scene.add(starCoreMesh);
+            }
+            else {
+                starCoreMesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({ color: 0x38BDF8 }));
+                scene.add(starCoreMesh);
+            }
+        }
+
+        function animateDirectorLoop() {
+            requestAnimationFrame(animateDirectorLoop);
+
+            if (isMoviePlaying) {
+                timelineProgress += 0.03; // Gentle slow movie speed
+                if (timelineProgress >= 100.0) {
+                    timelineProgress = 100.0;
+                    isMoviePlaying = false;
+                    document.getElementById('btn-director-play').innerText = "▶ Play Movie";
+                    document.getElementById('movie-act-indicator').innerText = "Status: Cinematic Epic Completed";
+                }
+                document.getElementById('director-scrubber').value = timelineProgress;
+                updateDirectorCinematic();
+            }
+
+            if (starCoreMesh) starCoreMesh.rotation.y += 0.005;
+            if (secondaryMesh) secondaryMesh.rotation.y += 0.03;
+            if (stellarParticles) stellarParticles.rotation.y += 0.002;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('load', initDirector3D);
+    </script>
+</div>
+</body></html>

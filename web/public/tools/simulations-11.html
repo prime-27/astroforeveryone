@@ -1,0 +1,406 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Observer Sky &amp; Sphere</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="observer-celestial-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(0, 230, 118, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #00E676; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 330px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #00E676; margin-bottom: 2px;">Observer Sky & Sphere</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Topocentric Horizon & Diurnal Motion</p>
+
+        <button id="btn-toggle-sky-spin" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Rotation</button>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Observer Latitude (φ):</span><span id="txt-obs-lat" style="color: #00E676; font-weight: 600;">17.44° N</span>
+            </div>
+            <input type="range" id="rng-obs-lat" min="-90" max="90" step="0.5" value="17.44" style="width: 100%; accent-color: #00E676; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Local Solar Time:</span><span id="txt-solar-time" style="color: #FBBF24; font-weight: 600;">12:00 (Noon)</span>
+            </div>
+            <input type="range" id="rng-solar-time" min="0" max="24" step="0.05" value="12.0" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Diurnal Speed:</span><span id="txt-sky-speed" style="color: #58A6FF; font-weight: 600;">1.0 hr/sec</span>
+            </div>
+            <input type="range" id="rng-sky-speed" min="0.1" max="8.0" step="0.1" value="1.0" style="width: 100%; accent-color: #58A6FF; cursor: pointer;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Seasonal Sun Path</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-sky" onclick="setSkySeason(23.44, this)">☀️ Summer</button>
+            <button class="btn-sky active" onclick="setSkySeason(0.0, this)">🌸 Equinox</button>
+            <button class="btn-sky" onclick="setSkySeason(-23.44, this)">❄️ Winter</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Observer Perspectives</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-cam" onclick="setObserverCam('standing')">Standing</button>
+            <button class="btn-cam" onclick="setObserverCam('south')">South (Transit)</button>
+            <button class="btn-cam" onclick="setObserverCam('north')">North (NCP)</button>
+            <button class="btn-cam" onclick="setObserverCam('east')">East (Rising)</button>
+            <button class="btn-cam" onclick="setObserverCam('west')">West (Setting)</button>
+            <button class="btn-cam active" onclick="setObserverCam('3d')">3D Sphere</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Visual Overlays</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; color: #C9D1D9;">
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-ground" checked style="margin-right:6px; accent-color:#00E676;">Observer Ground Plane</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-meridian" checked style="margin-right:6px; accent-color:#B388FF;">Local Meridian (North-Zenith-South)</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-equator" checked style="margin-right:6px; accent-color:#00E5FF;">Celestial Equator (δ = 0°)</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-const-lines" checked style="margin-right:6px; accent-color:#7986CB;">Constellation Asterisms</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-const-labels" checked style="margin-right:6px; accent-color:#9FA8DA;">Constellation Names</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-circumpolar" checked style="margin-right:6px; accent-color:#EC4899;">Circumpolar Circle</label>
+        </div>
+    </div>
+
+    <!-- Bottom Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 340px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #00E676; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">TOPOCENTRIC SKY TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">NCP Altitude:</span><span id="h-ncp-alt" style="color:#58A6FF; font-weight:600;">17.44° above North</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Sun Altitude (a):</span><span id="h-sun-alt" style="color:#FBBF24; font-weight:600;">+72.56°</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Sun Azimuth (A):</span><span id="h-sun-az" style="color:#FBBF24; font-weight:600;">180.0° (Due South)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Max Culmination:</span><span id="h-max-alt" style="color:#34D399; font-weight:600;">72.56° at Meridian</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Circumpolar Dec:</span><span id="h-circumpolar" style="color:#EC4899; font-weight:600;">≥ +72.56°</span></div>
+    </div>
+
+    <!-- UI Button Styles -->
+    <style>
+        .btn-sky { padding: 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .btn-sky:hover { background: #334155; border-color: #00E676; color: #00E676; }
+        .btn-sky.active { background: #059669; color: #FFF; border-color: #34D399; font-weight: bold; }
+
+        .btn-cam { padding: 4px; background: #0F172A; border: 1px solid #334155; color: #94A3B8; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; font-weight: 600; }
+        .btn-cam:hover { background: #1E293B; border-color: #38BDF8; color: #38BDF8; }
+        .btn-cam.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: bold; }
+    </style>
+</div>
+
+<!-- Three.js CDN Bundled Runtime -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const R_SPHERE = 14.0;
+        let latitudeDeg = 17.44;
+        let solarHour = 12.0;
+        let sunDecDeg = 0.0;
+        let isRunning = true;
+        let simSpeed = 1.0;
+
+        const CONSTELLATIONS = [
+            {
+                name: "Ursa Major",
+                stars: [
+                    { name: "Dubhe", ra: 165.93, dec: 61.75 }, { name: "Merak", ra: 165.46, dec: 56.38 },
+                    { name: "Phecda", ra: 178.46, dec: 53.69 }, { name: "Megrez", ra: 183.86, dec: 57.03 },
+                    { name: "Alioth", ra: 193.51, dec: 55.96 }, { name: "Mizar", ra: 200.98, dec: 54.92 },
+                    { name: "Alkaid", ra: 206.89, dec: 49.31 }
+                ],
+                lines: [[0, 1], [1, 2], [2, 3], [3, 0], [3, 4], [4, 5], [5, 6]],
+                labelRa: 185.0, labelDec: 58.0
+            },
+            {
+                name: "Orion",
+                stars: [
+                    { name: "Betelgeuse", ra: 88.79, dec: 7.41 }, { name: "Bellatrix", ra: 81.28, dec: 6.35 },
+                    { name: "Alnitak", ra: 85.19, dec: -1.94 }, { name: "Alnilam", ra: 84.05, dec: -1.20 },
+                    { name: "Mintaka", ra: 83.00, dec: -0.30 }, { name: "Saiph", ra: 86.94, dec: -9.67 },
+                    { name: "Rigel", ra: 78.63, dec: -8.20 }
+                ],
+                lines: [[0, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [5, 6]],
+                labelRa: 84.0, labelDec: 9.5
+            },
+            {
+                name: "Cassiopeia",
+                stars: [
+                    { name: "Caph", ra: 2.29, dec: 59.15 }, { name: "Schedar", ra: 10.13, dec: 56.54 },
+                    { name: "Navi", ra: 14.18, dec: 60.72 }, { name: "Ruchbah", ra: 21.45, dec: 60.23 },
+                    { name: "Segin", ra: 26.65, dec: 63.67 }
+                ],
+                lines: [[0, 1], [1, 2], [2, 3], [3, 4]],
+                labelRa: 15.0, labelDec: 62.0
+            },
+            {
+                name: "Crux (Cross)",
+                stars: [
+                    { name: "Acrux", ra: 186.65, dec: -63.10 }, { name: "Mimosa", ra: 191.93, dec: -59.69 },
+                    { name: "Gacrux", ra: 187.79, dec: -57.11 }, { name: "Imai", ra: 183.79, dec: -58.75 }
+                ],
+                lines: [[0, 2], [1, 3]],
+                labelRa: 187.0, labelDec: -65.0
+            }
+        ];
+
+        const container = document.getElementById('observer-celestial-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 16, 28);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.35));
+
+        function makeLabel(text, color = '#FFFFFF', size = 2.4) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.font = 'bold 32px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, 256, 75);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(size, size * 0.25, 1);
+            return sprite;
+        }
+
+        // 1. Observer Ground & Horizon
+        const groupHorizon = new THREE.Group();
+        scene.add(groupHorizon);
+
+        const ground = new THREE.Mesh(
+            new THREE.CircleGeometry(R_SPHERE, 64),
+            new THREE.MeshStandardMaterial({ color: 0x0A192F, side: THREE.DoubleSide })
+        );
+        ground.rotation.x = Math.PI / 2;
+        groupHorizon.add(ground);
+
+        // Fixed Horizon Ring & Cardinals
+        const horPts = [];
+        for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            horPts.push(new THREE.Vector3(R_SPHERE * Math.sin(a), 0, -R_SPHERE * Math.cos(a)));
+        }
+        const horizonLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(horPts), new THREE.LineBasicMaterial({ color: 0x00E676, linewidth: 2 }));
+        groupHorizon.add(horizonLine);
+
+        const cardinals = [
+            { name: "North", x: 0, z: -R_SPHERE },
+            { name: "East", x: R_SPHERE, z: 0 },
+            { name: "South", x: 0, z: R_SPHERE },
+            { name: "West", x: -R_SPHERE, z: 0 }
+        ];
+        cardinals.forEach(c => {
+            const lbl = makeLabel(c.name, '#69F0AE', 2.2);
+            lbl.position.set(c.x * 1.08, 0.3, c.z * 1.08);
+            groupHorizon.add(lbl);
+        });
+
+        // Observer Avatar at Center
+        const obsBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.9, 16), new THREE.MeshStandardMaterial({ color: 0x38BDF8 }));
+        obsBody.position.y = 0.45;
+        const obsHead = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), new THREE.MeshStandardMaterial({ color: 0xFDE047 }));
+        obsHead.position.y = 1.0;
+        groupHorizon.add(obsBody, obsHead);
+
+        // Meridian Line
+        const merPts = [];
+        for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            merPts.push(new THREE.Vector3(0, R_SPHERE * Math.sin(a), R_SPHERE * Math.cos(a)));
+        }
+        const meridianLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(merPts), new THREE.LineDashedMaterial({ color: 0xB388FF, dashSize: 0.4, gapSize: 0.2 }));
+        meridianLine.computeLineDistances();
+        scene.add(meridianLine);
+
+        // 2. Celestial Equator & Polar Axis
+        const equatorLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x00E5FF, linewidth: 2.2 }));
+        const polarAxisLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x00E5FF, linewidth: 2.5 }));
+        const circumpolarLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: 0xEC4899, dashSize: 0.3, gapSize: 0.2 }));
+        scene.add(equatorLine, polarAxisLine, circumpolarLine);
+
+        // 3. Sun Mesh
+        const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(0.65, 24, 24), new THREE.MeshBasicMaterial({ color: 0xFBBF24 }));
+        scene.add(sunMesh);
+
+        // 4. Constellations
+        const groupConstLines = new THREE.Group();
+        const groupConstLabels = new THREE.Group();
+        scene.add(groupConstLines, groupConstLabels);
+
+        const constObjects = [];
+        CONSTELLATIONS.forEach(c => {
+            const lineMeshes = [];
+            c.lines.forEach(() => {
+                const l = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x7986CB }));
+                groupConstLines.add(l);
+                lineMeshes.push(l);
+            });
+
+            const lbl = makeLabel(c.name, '#9FA8DA', 2.0);
+            groupConstLabels.add(lbl);
+
+            const starMeshes = [];
+            c.stars.forEach(() => {
+                const sm = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF }));
+                scene.add(sm);
+                starMeshes.push(sm);
+            });
+
+            constObjects.push({ cfg: c, lineMeshes, lbl, starMeshes });
+        });
+
+        function radecToAltAz(raDeg, decDeg, lstDeg, phiDeg) {
+            const H = (lstDeg - raDeg) * Math.PI / 180;
+            const d = decDeg * Math.PI / 180;
+            const p = phiDeg * Math.PI / 180;
+
+            const sinAlt = Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H);
+            const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
+            const cosAz = (Math.sin(d) - Math.sin(p) * Math.sin(alt)) / (Math.cos(p) * Math.cos(alt));
+            let A = Math.acos(Math.max(-1, Math.min(1, cosAz)));
+            if (Math.sin(H) > 0) A = 2 * Math.PI - A;
+
+            return {
+                pos: new THREE.Vector3(R_SPHERE * Math.cos(alt) * Math.sin(A), R_SPHERE * Math.sin(alt), -R_SPHERE * Math.cos(alt) * Math.cos(A)),
+                altDeg: alt * 180 / Math.PI,
+                azDeg: A * 180 / Math.PI
+            };
+        }
+
+        function updateSky() {
+            const pRad = latitudeDeg * Math.PI / 180;
+            const solarHourAngle = (solarHour - 12.0) * 15.0;
+            const lstDeg = (solarHourAngle + 360000.0) % 360.0;
+
+            // Celestial Equator
+            const eqPts = [];
+            for (let i = 0; i <= 64; i++) eqPts.push(radecToAltAz((i / 64) * 360, 0, lstDeg, latitudeDeg).pos);
+            equatorLine.geometry.setFromPoints(eqPts);
+
+            // Polar Axis
+            const ncpPos = new THREE.Vector3(0, R_SPHERE * 1.35 * Math.sin(pRad), -R_SPHERE * 1.35 * Math.cos(pRad));
+            const scpPos = new THREE.Vector3(0, -R_SPHERE * 1.35 * Math.sin(pRad), R_SPHERE * 1.35 * Math.cos(pRad));
+            polarAxisLine.geometry.setFromPoints([scpPos, ncpPos]);
+
+            // Circumpolar Circle
+            const circPts = [];
+            const circDec = 90.0 - Math.abs(latitudeDeg);
+            for (let i = 0; i <= 64; i++) circPts.push(radecToAltAz((i / 64) * 360, circDec, lstDeg, latitudeDeg).pos);
+            circumpolarLine.geometry.setFromPoints(circPts);
+            circumpolarLine.computeLineDistances();
+
+            // Sun Position
+            const sHor = radecToAltAz(0.0, sunDecDeg, solarHourAngle, latitudeDeg);
+            sunMesh.position.copy(sHor.pos);
+
+            // Constellations
+            constObjects.forEach(cObj => {
+                const sPositions = [];
+                cObj.cfg.stars.forEach((s, idx) => {
+                    const hor = radecToAltAz(s.ra, s.dec, lstDeg, latitudeDeg);
+                    sPositions.push(hor.pos);
+                    cObj.starMeshes[idx].position.copy(hor.pos);
+                });
+
+                cObj.cfg.lines.forEach((pair, idx) => {
+                    cObj.lineMeshes[idx].geometry.setFromPoints([sPositions[pair[0]], sPositions[pair[1]]]);
+                });
+
+                const lHor = radecToAltAz(cObj.cfg.labelRa, cObj.cfg.labelDec, lstDeg, latitudeDeg);
+                cObj.lbl.position.set(lHor.pos.x * 1.05, lHor.pos.y * 1.05 + 0.3, lHor.pos.z * 1.05);
+            });
+
+            // HUD & UI Updates
+            const maxCulmAlt = Math.min(90.0, 90.0 - latitudeDeg + sunDecDeg);
+            document.getElementById('h-ncp-alt').innerText = `${Math.abs(latitudeDeg).toFixed(2)}° above ${latitudeDeg >= 0 ? 'North' : 'South'}`;
+            document.getElementById('h-sun-alt').innerText = `${sHor.altDeg >= 0 ? '+' : ''}${sHor.altDeg.toFixed(2)}°`;
+            document.getElementById('h-sun-az').innerText = `${sHor.azDeg.toFixed(1)}°`;
+            document.getElementById('h-max-alt').innerText = `${maxCulmAlt.toFixed(2)}° at Meridian`;
+            document.getElementById('h-circumpolar').innerText = `≥ +${(90.0 - Math.abs(latitudeDeg)).toFixed(2)}°`;
+
+            document.getElementById('rng-solar-time').value = solarHour;
+            document.getElementById('txt-solar-time').innerText = `${solarHour.toFixed(1)}h`;
+        }
+
+        window.setSkySeason = function(val, btn) {
+            sunDecDeg = val;
+            document.querySelectorAll('.btn-sky').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            updateSky();
+        };
+
+        window.setObserverCam = function(mode) {
+            document.querySelectorAll('.btn-cam').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (mode === 'standing') { camera.position.set(0, 1.6, 0.1); controls.target.set(0, 4, -12); }
+            if (mode === 'south') { camera.position.set(0, 6, -20); controls.target.set(0, 4, 10); }
+            if (mode === 'north') { camera.position.set(0, 6, 20); controls.target.set(0, 4, -10); }
+            if (mode === 'east') { camera.position.set(-20, 6, 0); controls.target.set(10, 4, 0); }
+            if (mode === 'west') { camera.position.set(20, 6, 0); controls.target.set(-10, 4, 0); }
+            if (mode === '3d') { camera.position.set(0, 16, 28); controls.target.set(0, 0, 0); }
+        };
+
+        document.getElementById('rng-obs-lat').oninput = (e) => {
+            latitudeDeg = parseFloat(e.target.value);
+            document.getElementById('txt-obs-lat').innerText = `${latitudeDeg.toFixed(1)}° N`;
+            updateSky();
+        };
+
+        document.getElementById('rng-solar-time').oninput = (e) => { solarHour = parseFloat(e.target.value); updateSky(); };
+        document.getElementById('rng-sky-speed').oninput = (e) => {
+            simSpeed = parseFloat(e.target.value);
+            document.getElementById('txt-sky-speed').innerText = `${simSpeed.toFixed(1)} hr/sec`;
+        };
+
+        document.getElementById('btn-toggle-sky-spin').onclick = () => {
+            isRunning = !isRunning;
+            document.getElementById('btn-toggle-sky-spin').innerText = isRunning ? '⏸ Pause Rotation' : '▶ Resume Rotation';
+        };
+
+        document.getElementById('chk-ground').onchange = e => groupHorizon.visible = e.target.checked;
+        document.getElementById('chk-meridian').onchange = e => meridianLine.visible = e.target.checked;
+        document.getElementById('chk-equator').onchange = e => equatorLine.visible = e.target.checked;
+        document.getElementById('chk-const-lines').onchange = e => groupConstLines.visible = e.target.checked;
+        document.getElementById('chk-const-labels').onchange = e => groupConstLabels.visible = e.target.checked;
+        document.getElementById('chk-circumpolar').onchange = e => circumpolarLine.visible = e.target.checked;
+
+        let last = performance.now();
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - last) / 1000; last = now;
+
+            if (isRunning) {
+                solarHour = (solarHour + dt * simSpeed) % 24.0;
+                updateSky();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.onresize = () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+
+        loop(performance.now());
+        updateSky();
+    })();
+</script>
+</body></html>

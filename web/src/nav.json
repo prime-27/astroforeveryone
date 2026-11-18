@@ -1,0 +1,107 @@
+[
+ {
+  "label": "About",
+  "pages": [
+   {
+    "slug": "about",
+    "title": "About Us"
+   },
+   {
+    "slug": "ravi",
+    "title": "Dr Ravi Raja Pothineni"
+   },
+   {
+    "slug": "research",
+    "title": "Research"
+   },
+   {
+    "slug": "careers",
+    "title": "Career Paths"
+   }
+  ]
+ },
+ {
+  "label": "Programs",
+  "pages": [
+   {
+    "slug": "programs",
+    "title": "Programs"
+   },
+   {
+    "slug": "activities",
+    "title": "Activities & Outreach"
+   },
+   {
+    "slug": "events",
+    "title": "Events"
+   },
+   {
+    "slug": "talks",
+    "title": "ASTRO Talks"
+   }
+  ]
+ },
+ {
+  "label": "Learn",
+  "pages": [
+   {
+    "slug": "astronomy-for-everyone",
+    "title": "Astronomy for Everyone"
+   },
+   {
+    "slug": "articles",
+    "title": "Articles"
+   },
+   {
+    "slug": "telescopes",
+    "title": "Telescopes & Instruments"
+   },
+   {
+    "slug": "gallery",
+    "title": "Gallery"
+   }
+  ]
+ },
+ {
+  "label": "Tools",
+  "pages": [
+   {
+    "slug": "sky-tools",
+    "title": "Sky Tools"
+   },
+   {
+    "slug": "scientific-tools",
+    "title": "Scientific Tools"
+   },
+   {
+    "slug": "simulations",
+    "title": "Simulations"
+   },
+   {
+    "slug": "games",
+    "title": "Games"
+   },
+   {
+    "slug": "quizzes",
+    "title": "Quizzes"
+   }
+  ]
+ },
+ {
+  "label": "Writings",
+  "pages": [
+   {
+    "slug": "poetry",
+    "title": "Poetry"
+   },
+   {
+    "slug": "mindful-life",
+    "title": "Mindful Life"
+   },
+   {
+    "slug": "mindful-learning",
+    "title": "Mindful Learning"
+   }
+  ]
+ }
+]

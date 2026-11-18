@@ -1,0 +1,297 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Moon Phase Engine</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="moon-phase-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #8B949E; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #58A6FF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Live 2D Earth Telescope Viewport (Top-Right) -->
+    <div style="position: absolute; top: 75px; right: 12px; width: 190px; background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px; text-align: center; z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.8);">
+        <div style="font-size: 0.68rem; color: #79C0FF; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">View from Earth (Telescope)</div>
+        <canvas id="view-2d-canvas" width="160" height="160" style="width: 125px; height: 125px; border-radius: 50%; background: #000; border: 2px solid #38BDF8; display: block; margin: 0 auto; box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);"></canvas>
+        <div id="txt-phase-name" style="font-size: 0.82rem; color: #FBBF24; font-weight: 700; margin-top: 6px;">Waxing Gibbous</div>
+        <div id="txt-illum" style="font-size: 0.70rem; color: #94A3B8; font-family: monospace;">Illumination: 85.4%</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 320px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #ECEFF1; margin-bottom: 2px;">Moon Phase Engine</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Synodic Geometry & Lunar Orbit</p>
+
+        <button id="btn-toggle-moon-orbit" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Orbit</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">8 Primary Phases (Snap to Phase)</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-mp" onclick="setMoonAngle(0, this)">🌑 New Moon (0°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(45, this)">🌒 Waxing Cresc (45°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(90, this)">🌓 First Qtr (90°)</button>
+            <button class="btn-mp active" onclick="setMoonAngle(135, this)">🌔 Waxing Gibb (135°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(180, this)">🌕 Full Moon (180°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(225, this)">🌖 Waning Gibb (225°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(270, this)">🌗 Third Qtr (270°)</button>
+            <button class="btn-mp" onclick="setMoonAngle(315, this)">🌘 Waning Cresc (315°)</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Phase Angle (ψ):</span><span id="txt-angle" style="color: #FBBF24; font-weight: 600;">135.0°</span>
+            </div>
+            <input type="range" id="rng-phase-angle" min="0" max="360" step="0.5" value="135" style="width: 100%; accent-color: #58A6FF; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Moon Age:</span><span id="txt-age" style="color: #58A6FF; font-weight: 600;">11.07 Days</span>
+            </div>
+            <input type="range" id="rng-age" min="0" max="29.53" step="0.1" value="11.07" style="width: 100%; accent-color: #58A6FF; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Simulation Speed:</span><span id="txt-mp-speed" style="color: #58A6FF; font-weight: 600;">3.0 days/sec</span>
+            </div>
+            <input type="range" id="rng-mp-speed" min="0.2" max="15.0" step="0.2" value="3.0" style="width: 100%; accent-color: #58A6FF; cursor: pointer;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Camera Perspectives</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;">
+            <button class="btn-cam" onclick="setMoonCam('top')">Top-Down</button>
+            <button class="btn-cam" onclick="setMoonCam('earth')">From Earth</button>
+            <button class="btn-cam" onclick="setMoonCam('sun')">Sun Side</button>
+        </div>
+    </div>
+
+    <!-- Bottom Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 340px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">SYNODIC LUNAR TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Phase Name:</span><span id="h-phase" style="color:#FBBF24; font-weight:600;">Waxing Gibbous</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Illuminated (k):</span><span id="h-illum" style="color:#38BDF8; font-weight:600;">85.4%</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Phase Angle (ψ):</span><span id="h-angle" style="color:#FBBF24; font-weight:600;">135.0°</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Lunar Tithi:</span><span id="h-tithi" style="color:#58A6FF;">Shukla Ekadashi / Trayodashi</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Synodic Cycle:</span><span style="color:#34D399;">29.53 Days (Month)</span></div>
+    </div>
+
+    <!-- UI Button Styles -->
+    <style>
+        .btn-mp { padding: 5px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: left; }
+        .btn-mp:hover { background: #334155; border-color: #58A6FF; color: #58A6FF; }
+        .btn-mp.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: bold; }
+
+        .btn-cam { padding: 4px; background: #0F172A; border: 1px solid #334155; color: #94A3B8; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; font-weight: 600; }
+        .btn-cam:hover { background: #1E293B; border-color: #38BDF8; color: #38BDF8; }
+    </style>
+</div>
+
+<!-- Three.js CDN Bundled Runtime -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const SYNODIC_MONTH = 29.53058867;
+        const PHASES = [
+            { name: "New Moon", angle: 0, tithi: "Amavasya" },
+            { name: "Waxing Crescent", angle: 45, tithi: "Shukla Tritiya / Chaturthi" },
+            { name: "First Quarter", angle: 90, tithi: "Shukla Ashtami" },
+            { name: "Waxing Gibbous", angle: 135, tithi: "Shukla Ekadashi / Trayodashi" },
+            { name: "Full Moon", angle: 180, tithi: "Purnima" },
+            { name: "Waning Gibbous", angle: 225, tithi: "Krishna Tritiya / Chaturthi" },
+            { name: "Third Quarter", angle: 270, tithi: "Krishna Ashtami" },
+            { name: "Waning Crescent", angle: 315, tithi: "Krishna Ekadashi / Dwadashi" }
+        ];
+
+        const container = document.getElementById('moon-phase-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 32, 28);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Sunlight source incoming from +X direction
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.22));
+        const sun = new THREE.DirectionalLight(0xFFFFFF, 2.8);
+        sun.position.set(50, 0, 0);
+        scene.add(sun);
+
+        // Starfield
+        const starsGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for (let i = 0; i < 1600; i++) {
+            const u = Math.random() * Math.PI * 2;
+            const v = Math.acos((Math.random() * 2) - 1);
+            const r = 120 + Math.random() * 60;
+            starCoords.push(r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+        }
+        starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.7, transparent: true, opacity: 0.8 })));
+
+        // 1. Earth at Center
+        const earth = new THREE.Mesh(
+            new THREE.SphereGeometry(2.0, 32, 32),
+            new THREE.MeshStandardMaterial({ color: 0x0284C7, roughness: 0.45 })
+        );
+        scene.add(earth);
+
+        // 2. Moon Orbit Track
+        const R_ORBIT = 15.0;
+        const orbPts = [];
+        for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            orbPts.push(new THREE.Vector3(R_ORBIT * Math.cos(a), 0, R_ORBIT * Math.sin(a)));
+        }
+        scene.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(orbPts),
+            new THREE.LineBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.5 })
+        ));
+
+        // 3. Moon Mesh
+        const moon = new THREE.Mesh(
+            new THREE.SphereGeometry(0.85, 32, 32),
+            new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.75 })
+        );
+        scene.add(moon);
+
+        // 4. Earth-Moon Sightline Ray
+        const sightline = new THREE.Line(
+            new THREE.BufferGeometry(),
+            new THREE.LineDashedMaterial({ color: 0x00E676, dashSize: 0.4, gapSize: 0.2, linewidth: 2 })
+        );
+        scene.add(sightline);
+
+        // 5. Incoming Parallel Sun Rays from +X
+        const sunrays = new THREE.Group();
+        [-10, -5, 0, 5, 10].forEach(z => {
+            const line = new THREE.Line(
+                new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(30, 0, z), new THREE.Vector3(18, 0, z)]),
+                new THREE.LineBasicMaterial({ color: 0xFFD54F, linewidth: 2 })
+            );
+            sunrays.add(line);
+        });
+        scene.add(sunrays);
+
+        // 2D Telescope Viewport Canvas
+        const cv = document.getElementById('view-2d-canvas');
+        const ctx = cv.getContext('2d');
+
+        function draw2D(elong) {
+            ctx.clearRect(0, 0, 160, 160);
+            ctx.beginPath();
+            ctx.arc(80, 80, 70, 0, Math.PI * 2);
+            ctx.fillStyle = '#111827';
+            ctx.fill();
+
+            const phi = (elong % 360) * Math.PI / 180;
+            const cosPhi = Math.cos(phi);
+            ctx.beginPath();
+            ctx.fillStyle = '#ECEFF1';
+
+            if (elong <= 180) {
+                ctx.arc(80, 80, 70, -Math.PI / 2, Math.PI / 2, false);
+                ctx.ellipse(80, 80, Math.abs(cosPhi) * 70, 70, 0, Math.PI / 2, -Math.PI / 2, cosPhi > 0);
+            } else {
+                ctx.arc(80, 80, 70, Math.PI / 2, -Math.PI / 2, false);
+                ctx.ellipse(80, 80, Math.abs(cosPhi) * 70, 70, 0, -Math.PI / 2, Math.PI / 2, cosPhi > 0);
+            }
+            ctx.fill();
+        }
+
+        let elongDeg = 135.0;
+        let isRun = true;
+        let speed = 3.0;
+
+        function update() {
+            const rad = (elongDeg % 360) * Math.PI / 180;
+            const mx = R_ORBIT * Math.cos(rad);
+            const mz = -R_ORBIT * Math.sin(rad);
+
+            moon.position.set(mx, 0, mz);
+            moon.rotation.y = -rad;
+
+            sightline.geometry.setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(mx, 0, mz)]);
+            sightline.computeLineDistances();
+
+            const illum = ((1 - Math.cos(rad)) / 2) * 100;
+            const ageDays = (elongDeg / 360) * SYNODIC_MONTH;
+
+            let phaseName = "Waxing Gibbous";
+            let tithi = "Shukla Ekadashi / Trayodashi";
+
+            if (elongDeg < 15 || elongDeg > 345) { phaseName = "New Moon"; tithi = "Amavasya"; }
+            else if (elongDeg < 75) { phaseName = "Waxing Crescent"; tithi = "Shukla Tritiya / Chaturthi"; }
+            else if (elongDeg < 105) { phaseName = "First Quarter"; tithi = "Shukla Ashtami"; }
+            else if (elongDeg < 165) { phaseName = "Waxing Gibbous"; tithi = "Shukla Ekadashi / Trayodashi"; }
+            else if (elongDeg < 195) { phaseName = "Full Moon"; tithi = "Purnima"; }
+            else if (elongDeg < 255) { phaseName = "Waning Gibbous"; tithi = "Krishna Tritiya / Chaturthi"; }
+            else if (elongDeg < 285) { phaseName = "Third Quarter"; tithi = "Krishna Ashtami"; }
+            else { phaseName = "Waning Crescent"; tithi = "Krishna Ekadashi / Dwadashi"; }
+
+            document.getElementById('rng-phase-angle').value = elongDeg.toFixed(1);
+            document.getElementById('rng-age').value = ageDays.toFixed(2);
+            document.getElementById('txt-angle').innerText = elongDeg.toFixed(1) + "°";
+            document.getElementById('txt-age').innerText = ageDays.toFixed(2) + " Days";
+
+            document.getElementById('txt-phase-name').innerText = phaseName;
+            document.getElementById('txt-illum').innerText = "Illumination: " + illum.toFixed(1) + "%";
+
+            document.getElementById('h-phase').innerText = phaseName;
+            document.getElementById('h-illum').innerText = illum.toFixed(1) + "%";
+            document.getElementById('h-angle').innerText = elongDeg.toFixed(1) + "°";
+            document.getElementById('h-tithi').innerText = tithi;
+
+            draw2D(elongDeg);
+        }
+
+        window.setMoonAngle = function(deg, btn) {
+            elongDeg = deg;
+            document.querySelectorAll('.btn-mp').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            update();
+        };
+
+        window.setMoonCam = function(mode) {
+            if (mode === 'top') { camera.position.set(0, 34, 18); controls.target.set(0, 0, 0); }
+            if (mode === 'earth') { camera.position.set(0, 2.5, 4.5); controls.target.copy(moon.position); }
+            if (mode === 'sun') { camera.position.set(38, 4, 0); controls.target.set(0, 0, 0); }
+        };
+
+        document.getElementById('rng-phase-angle').oninput = (e) => { elongDeg = parseFloat(e.target.value); update(); };
+        document.getElementById('rng-age').oninput = (e) => { elongDeg = (parseFloat(e.target.value) / SYNODIC_MONTH) * 360; update(); };
+        document.getElementById('rng-mp-speed').oninput = (e) => { speed = parseFloat(e.target.value); document.getElementById('txt-mp-speed').innerText = speed.toFixed(1) + " days/sec"; };
+        document.getElementById('btn-toggle-moon-orbit').onclick = () => { isRun = !isRun; document.getElementById('btn-toggle-moon-orbit').innerText = isRun ? '⏸ Pause Orbit' : '▶ Resume Orbit'; };
+
+        let last = performance.now();
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - last) / 1000; last = now;
+            if (isRun) {
+                elongDeg = (elongDeg + (dt * speed / SYNODIC_MONTH) * 360) % 360;
+                update();
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.onresize = () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+
+        loop(performance.now());
+        update();
+    })();
+</script>
+</body></html>

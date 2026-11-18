@@ -1,0 +1,303 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Multi-Coordinate Interactive 3D Star Simulation Laboratory</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 900px; margin: 0 auto; background: #070B14; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 20px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 12px 40px rgba(0,0,0,0.85); box-sizing: border-box;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 style="font-size: 1.2rem; color: #FBBF24; margin: 0; font-weight: 700;">Multi-Coordinate Interactive 3D Star Simulation Laboratory</h2>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 3px 0 0 0;">Real-Time 3D Star Plotting Across Horizon, Equatorial, Hour Angle, and Ecliptic Systems[cite: 1]</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #34D399; font-weight: 700; letter-spacing: 0.8px;">Live Interactive 3D Lab</div>
+            <div style="font-size: 0.85rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <!-- Workspace Grid -->
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 16px;">
+        
+        <!-- Left Controls & Coordinate System Switcher -->
+        <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; font-size: 0.74rem;">
+            <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; letter-spacing: 0.8px;">🧭 Select Coordinate System</div>
+            
+            <button class="sys-btn active" onclick="switchCoordSystem('horizon', this)">1. Horizon (Alt / Az)</button>
+            <button class="sys-btn" onclick="switchCoordSystem('equatorial', this)">2. Equatorial (RA / Dec)</button>
+            <button class="sys-btn" onclick="switchCoordSystem('hour_angle', this)">3. Hour Angle & LST</button>
+            <button class="sys-btn" onclick="switchCoordSystem('ecliptic', this)">4. Ecliptic (Lambda / Beta)</button>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                    <label style="display: block; color: #8B949E; font-size: 0.68rem; margin-bottom: 2px;"><span id="lbl-param1-name">Latitude (phi)</span>: <span id="lbl-param1-val" style="color: #FBBF24;">30.0°</span></label>
+                    <input type="range" id="slider-p1" min="-90" max="90" step="1" value="30" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+                </div>
+                <div>
+                    <label style="display: block; color: #8B949E; font-size: 0.68rem; margin-bottom: 2px;"><span id="lbl-param2-name">Declination (delta)</span>: <span id="lbl-param2-val" style="color: #38BDF8;">20.0°</span></label>
+                    <input type="range" id="slider-p2" min="-90" max="90" step="1" value="20" style="width: 100%; accent-color: #38BDF8; cursor: pointer;">
+                </div>
+                <div>
+                    <label style="display: block; color: #8B949E; font-size: 0.68rem; margin-bottom: 2px;"><span id="lbl-param3-name">Hour Angle (H)</span>: <span id="lbl-param3-val" style="color: #34D399;">45.0°</span></label>
+                    <input type="range" id="slider-p3" min="-180" max="180" step="1" value="45" style="width: 100%; accent-color: #34D399; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: 3D Canvas + Live Computed Readouts -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- 3D Canvas Container -->
+            <div style="position: relative; width: 100%; height: 260px; background: #03060B; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; overflow: hidden;">
+                <div id="multi-coord-container" style="width: 100%; height: 100%;"></div>
+                <div style="position: absolute; top: 8px; left: 10px; font-size: 0.62rem; color: #38BDF8; font-family: monospace; background: rgba(0,0,0,0.6); padding: 3px 6px; border-radius: 4px;">
+                    Star Marker Moves Live Across Selected Coordinate Frame[cite: 1]
+                </div>
+            </div>
+
+            <!-- Live Metrics Card -->
+            <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div id="sys-title" style="font-size: 0.95rem; color: #FBBF24; font-weight: 700; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">Horizon System (Altitude / Azimuth)</div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; font-size: 0.72rem;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                            <span id="out-label1" style="color: #8B949E; display: block; font-size: 0.58rem;">Altitude (a)</span>
+                            <span id="res-val1" style="color: #34D399; font-weight: 700; font-family: monospace;">--</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                            <span id="out-label2" style="color: #8B949E; display: block; font-size: 0.58rem;">Zenith Distance (z)</span>
+                            <span id="res-val2" style="color: #38BDF8; font-weight: 700; font-family: monospace;">--</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                            <span id="out-label3" style="color: #8B949E; display: block; font-size: 0.58rem;">Azimuth (A)</span>
+                            <span id="res-val3" style="color: #FBBF24; font-weight: 700; font-family: monospace;">--</span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px; font-size: 0.68rem;">
+                        <span style="color: #8B949E; display: block; font-size: 0.58rem; text-transform: uppercase; margin-bottom: 2px;">Governing Relation / Formula:</span>
+                        <code id="sys-formula" style="color: #38BDF8; font-family: monospace;">sin(a) = sin(phi) * sin(delta) + cos(phi) * cos(delta) * cos(H)</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Styles -->
+    <style>
+        .sys-btn { padding: 7px 10px; background: #161B22; border: 1px solid rgba(255,255,255,0.08); color: #C9D1D9; border-radius: 6px; font-size: 0.72rem; cursor: pointer; text-align: left; font-weight: 600; }
+        .sys-btn:hover { background: #21262D; border-color: #38BDF8; color: #38BDF8; }
+        .sys-btn.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+    </style>
+
+    <!-- Three.js CDN Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Multi-Coordinate Simulation Script -->
+    <script>
+        let activeSystem = 'horizon';
+
+        function hoursToHM(decimalHours) {
+            let normHours = (decimalHours % 24 + 24) % 24;
+            let h = Math.floor(normHours);
+            let m = Math.round((normHours - h) * 60);
+            if (m === 60) { h = (h + 1) % 24; m = 0; }
+            return h.toString().padStart(2, '0') + "h " + m.toString().padStart(2, '0') + "m";
+        }
+
+        window.switchCoordSystem = function(system, btn) {
+            document.querySelectorAll('.sys-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            activeSystem = system;
+
+            const titles = {
+                'horizon': "Horizon System (Altitude / Azimuth)",
+                'equatorial': "Equatorial System (Right Ascension / Declination)",
+                'hour_angle': "Hour Angle & LST Computation (LST = RA + H)",
+                'ecliptic': "Ecliptic System (Longitude / Latitude)"
+            };
+
+            const labels = {
+                'horizon': { p1: "Latitude (phi)", p2: "Declination (delta)", p3: "Hour Angle (H)", o1: "Altitude (a)", o2: "Zenith Dist (z)", o3: "Azimuth (A)", min1: -90, max1: 90, step1: 1, def1: 30, min2: -90, max2: 90, step2: 1, def2: 20, min3: -180, max3: 180, step3: 1, def3: 45 },
+                'equatorial': { p1: "Right Ascension (alpha)", p2: "Declination (delta)", p3: "Sidereal Time (LST)", o1: "Declination", o2: "Right Asc.", o3: "Hour Angle (H)", min1: 0, max1: 24, step1: 0.1, def1: 6.0, min2: -90, max2: 90, step2: 1, def2: 20, min3: 0, max3: 24, step3: 0.1, def3: 12.0 },
+                'hour_angle': { p1: "Local Sidereal Time (LST)", p2: "Right Ascension (alpha)", p3: "Declination (delta)", o1: "Hour Angle (H)", o2: "RA (alpha)", o3: "LST", min1: 0, max1: 24, step1: 0.1, def1: 21.67, min2: 0, max2: 24, step2: 0.1, def2: 19.84, min3: -90, max3: 90, step3: 1, def3: 45 },
+                'ecliptic': { p1: "Ecliptic Long (lambda)", p2: "Ecliptic Lat (beta)", p3: "Obliquity (epsilon)", o1: "Latitude (beta)", o2: "Longitude", o3: "Obliquity", min1: 0, max1: 360, step1: 1, def1: 45, min2: -90, max2: 90, step2: 1, def2: 10, min3: 0, max3: 90, step3: 0.1, def3: 23.4 }
+            };
+
+            const formulas = {
+                'horizon': "sin(a) = sin(phi) * sin(delta) + cos(phi) * cos(delta) * cos(H)",
+                'equatorial': "1h = 15°, Delta alpha approx m + n * sin(alpha) * tan(delta)",
+                'hour_angle': "H = LST - alpha  <=>  LST = alpha + H",
+                'ecliptic': "lambda_sayana = lambda_nirayana + Ayanamsha (Delta lambda)"
+            };
+
+            document.getElementById('sys-title').innerText = titles[system];
+            document.getElementById('sys-formula').innerText = formulas[system];
+
+            document.getElementById('lbl-param1-name').innerText = labels[system].p1;
+            document.getElementById('lbl-param2-name').innerText = labels[system].p2;
+            document.getElementById('lbl-param3-name').innerText = labels[system].p3;
+
+            document.getElementById('out-label1').innerText = labels[system].o1;
+            document.getElementById('out-label2').innerText = labels[system].o2;
+            document.getElementById('out-label3').innerText = labels[system].o3;
+
+            const cfg = labels[system];
+            p1Input.min = cfg.min1; p1Input.max = cfg.max1; p1Input.step = cfg.step1; p1Input.value = cfg.def1;
+            p2Input.min = cfg.min2; p2Input.max = cfg.max2; p2Input.step = cfg.step2; p2Input.value = cfg.def2;
+            p3Input.min = cfg.min3; p3Input.max = cfg.max3; p3Input.step = cfg.step3; p3Input.value = cfg.def3;
+
+            updateMultiCoordSimulation();
+        };
+
+        const p1Input = document.getElementById('slider-p1');
+        const p2Input = document.getElementById('slider-p2');
+        const p3Input = document.getElementById('slider-p3');
+
+        function updateMultiCoordSimulation() {
+            const v1 = parseFloat(p1Input.value);
+            const v2 = parseFloat(p2Input.value);
+            const v3 = parseFloat(p3Input.value);
+
+            let theta = 0, phiAngle = 0;
+
+            if (activeSystem === 'horizon') {
+                document.getElementById('lbl-param1-val').innerText = v1.toFixed(1) + "°";
+                document.getElementById('lbl-param2-val').innerText = v2.toFixed(1) + "°";
+                document.getElementById('lbl-param3-val').innerText = v3.toFixed(1) + "°";
+
+                const phiRad = v1 * (Math.PI / 180);
+                const deltaRad = v2 * (Math.PI / 180);
+                const hRad = v3 * (Math.PI / 180);
+
+                const sinA = (Math.sin(phiRad) * Math.sin(deltaRad)) + (Math.cos(phiRad) * Math.cos(deltaRad) * Math.cos(hRad));
+                const aRad = Math.asin(Math.max(-1, Math.min(1, sinA)));
+                const aDeg = aRad * (180 / Math.PI);
+                const zDeg = 90.0 - aDeg;
+
+                let cosA = (Math.sin(deltaRad) - (Math.sin(phiRad) * Math.sin(aRad))) / (Math.cos(phiRad) * Math.cos(aRad));
+                cosA = Math.max(-1, Math.min(1, cosA));
+                let azDeg = Math.acos(cosA) * (180 / Math.PI);
+                if (v3 > 0) azDeg = 360 - azDeg;
+
+                document.getElementById('res-val1').innerText = aDeg.toFixed(2) + "°";
+                document.getElementById('res-val2').innerText = zDeg.toFixed(2) + "°";
+                document.getElementById('res-val3').innerText = azDeg.toFixed(2) + "°";
+
+                theta = azDeg * (Math.PI / 180);
+                phiAngle = (90 - aDeg) * (Math.PI / 180);
+            } 
+            else if (activeSystem === 'equatorial') {
+                document.getElementById('lbl-param1-val').innerText = hoursToHM(v1) + " (" + v1.toFixed(1) + "h)";
+                document.getElementById('lbl-param2-val').innerText = v2.toFixed(1) + "°";
+                document.getElementById('lbl-param3-val').innerText = hoursToHM(v3) + " (" + v3.toFixed(1) + "h)";
+
+                document.getElementById('res-val1').innerText = v2.toFixed(2) + "° (Dec)";
+                document.getElementById('res-val2').innerText = hoursToHM(v1) + " (RA)";
+                
+                let hVal = v3 - v1;
+                document.getElementById('res-val3').innerText = hVal.toFixed(2) + "h (H)";
+
+                theta = (v1 / 24) * (2 * Math.PI);
+                phiAngle = (90 - v2) * (Math.PI / 180);
+            }
+            else if (activeSystem === 'hour_angle') {
+                document.getElementById('lbl-param1-val').innerText = hoursToHM(v1) + " (" + v1.toFixed(1) + "h)";
+                document.getElementById('lbl-param2-val').innerText = hoursToHM(v2) + " (" + v2.toFixed(1) + "h)";
+                document.getElementById('lbl-param3-val').innerText = v3.toFixed(1) + "°";
+
+                let H_hours = v1 - v2;
+                let H_deg = H_hours * 15;
+
+                document.getElementById('res-val1').innerText = H_hours.toFixed(2) + "h (" + H_deg.toFixed(1) + "°)";
+                document.getElementById('res-val2').innerText = hoursToHM(v2);
+                document.getElementById('res-val3').innerText = hoursToHM(v1);
+
+                theta = (v2 / 24) * (2 * Math.PI);
+                phiAngle = (90 - v3) * (Math.PI / 180);
+            }
+            else if (activeSystem === 'ecliptic') {
+                document.getElementById('lbl-param1-val').innerText = v1.toFixed(1) + "°";
+                document.getElementById('lbl-param2-val').innerText = v2.toFixed(1) + "°";
+                document.getElementById('lbl-param3-val').innerText = v3.toFixed(1) + "°";
+
+                document.getElementById('res-val1').innerText = v2.toFixed(2) + "° (Lat)";
+                document.getElementById('res-val2').innerText = v1.toFixed(2) + "° (Long)";
+                document.getElementById('res-val3').innerText = v3.toFixed(2) + "° (Eps)";
+
+                theta = v1 * (Math.PI / 180);
+                phiAngle = (90 - v2) * (Math.PI / 180);
+            }
+
+            if (window.updateStar3DMulti) {
+                window.updateStar3DMulti(theta, phiAngle);
+            }
+        }
+
+        p1Input.oninput = updateMultiCoordSimulation;
+        p2Input.oninput = updateMultiCoordSimulation;
+        p3Input.oninput = updateMultiCoordSimulation;
+
+        // Three.js Setup
+        (function(){
+            const container = document.getElementById('multi-coord-container');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x03060B);
+
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 3, 6);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            scene.add(new THREE.AmbientLight(0xFFFFFF, 0.7));
+
+            const sphereMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(2.2, 32, 32),
+                new THREE.MeshBasicMaterial({ color: 0x38BDF8, wireframe: true, transparent: true, opacity: 0.15 })
+            );
+            scene.add(sphereMesh);
+
+            const earth = new THREE.Mesh(
+                new THREE.SphereGeometry(0.6, 32, 32),
+                new THREE.MeshStandardMaterial({ color: 0x0284C7, roughness: 0.5 })
+            );
+            scene.add(earth);
+
+            const star = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0xFBBF24 })
+            );
+            scene.add(star);
+
+            window.updateStar3DMulti = function(theta, phiAngle) {
+                const r = 2.2;
+                const x = r * Math.sin(phiAngle) * Math.sin(theta);
+                const y = r * Math.cos(phiAngle);
+                const z = r * Math.sin(phiAngle) * Math.cos(theta);
+                star.position.set(x, y, z);
+            };
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+
+            updateMultiCoordSimulation();
+        })();
+    </script>
+</div>
+</body></html>

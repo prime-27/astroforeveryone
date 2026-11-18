@@ -1,0 +1,323 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eclipse Mechanics</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="eclipse-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Live 2D Earth View / Eclipse Telescope Port -->
+    <div style="position: absolute; top: 75px; right: 12px; width: 180px; background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px; text-align: center; z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.8);">
+        <div style="font-size: 0.68rem; color: #79C0FF; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">Observer Sky View</div>
+        <canvas id="view-eclipse-2d" width="160" height="160" style="width: 120px; height: 120px; border-radius: 50%; background: #000; border: 2px solid #FBBF24; display: block; margin: 0 auto;"></canvas>
+        <div id="txt-eclipse-type" style="font-size: 0.80rem; color: #FBBF24; font-weight: 700; margin-top: 6px;">Total Solar Eclipse</div>
+        <div id="txt-eclipse-obsc" style="font-size: 0.70rem; color: #94A3B8; font-family: monospace;">Obscuration: 100%</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 320px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #FBBF24; margin-bottom: 2px;">Eclipse Mechanics</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Umbra, Penumbra & Nodal Alignment</p>
+
+        <button id="btn-toggle-eclipse-orbit" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Orbit</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Eclipse Archetype Presets</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-ecl active" onclick="setEclipseMode('total-solar', this)">🌑 Total Solar</button>
+            <button class="btn-ecl" onclick="setEclipseMode('annular-solar', this)">💍 Annular Solar</button>
+            <button class="btn-ecl" onclick="setEclipseMode('total-lunar', this)">🔴 Total Lunar</button>
+            <button class="btn-ecl" onclick="setEclipseMode('partial-lunar', this)">🌗 Partial Lunar</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Moon Orbit Position:</span><span id="txt-orb-deg" style="color: #FBBF24; font-weight: 600;">0.0° (New Moon)</span>
+            </div>
+            <input type="range" id="rng-orb-deg" min="0" max="360" step="0.5" value="0" style="width: 100%; accent-color: #FBBF24;">
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Nodal Latitude Offset (β):</span><span id="txt-node-offset" style="color: #58A6FF; font-weight: 600;">0.00° (Perfect Node)</span>
+            </div>
+            <input type="range" id="rng-node-offset" min="-5.15" max="5.15" step="0.05" value="0" style="width: 100%; accent-color: #58A6FF;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Orbit Speed:</span><span id="txt-ecl-speed" style="color: #58A6FF; font-weight: 600;">2.0 days/sec</span>
+            </div>
+            <input type="range" id="rng-ecl-speed" min="0.2" max="10" step="0.2" value="2.0" style="width: 100%; accent-color: #58A6FF;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Camera Perspectives</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;">
+            <button class="btn-ecl-cam" onclick="setEclCam('iso')">3D Orbit</button>
+            <button class="btn-ecl-cam" onclick="setEclCam('earth')">From Earth</button>
+            <button class="btn-ecl-cam" onclick="setEclCam('profile')">Side Profile</button>
+        </div>
+    </div>
+
+    <!-- Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 330px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">ECLIPSE SHADOW GEOMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Syzygy Alignment:</span><span id="e-syzygy" style="color:#FBBF24; font-weight:600;">Solar Conjunction</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Umbra Cone Length:</span><span id="e-umbra-len" style="color:#58A6FF; font-weight:600;">374,000 km</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Antumbra / Totality:</span><span id="e-totality" style="color:#34D399; font-weight:600;">Totality Path Active</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Nodal Distance (Δλ):</span><span id="e-node-dist" style="color:#58A6FF; font-weight:600;">0.0° (Rahu / Ketu Node)</span></div>
+    </div>
+
+    <style>
+        .btn-ecl { padding: 5px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: left; }
+        .btn-ecl:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-ecl.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: bold; }
+
+        .btn-ecl-cam { padding: 4px; background: #0F172A; border: 1px solid #334155; color: #94A3B8; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .btn-ecl-cam:hover { background: #1E293B; border-color: #38BDF8; color: #38BDF8; }
+    </style>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const container = document.getElementById('eclipse-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 26, 32);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.25));
+        const sunLight = new THREE.DirectionalLight(0xFFFFFF, 3.0);
+        sunLight.position.set(60, 0, 0); // Sunlight source from +X
+        scene.add(sunLight);
+
+        // Starfield Dust
+        const starsGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for (let i = 0; i < 1800; i++) {
+            const u = Math.random() * Math.PI * 2;
+            const v = Math.acos((Math.random() * 2) - 1);
+            const r = 160 + Math.random() * 80;
+            starCoords.push(r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+        }
+        starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.75, transparent: true, opacity: 0.85 })));
+
+        // 1. Distant Sun Representation
+        const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(4.5, 32, 32), new THREE.MeshBasicMaterial({ color: 0xFBBF24 }));
+        sunMesh.position.set(45, 0, 0);
+        scene.add(sunMesh);
+
+        // 2. Earth
+        const earth = new THREE.Mesh(new THREE.SphereGeometry(2.2, 32, 32), new THREE.MeshStandardMaterial({ color: 0x0284C7, roughness: 0.4 }));
+        scene.add(earth);
+
+        // 3. Moon & Orbit
+        const R_MOON = 13.0;
+        const moon = new THREE.Mesh(new THREE.SphereGeometry(0.65, 32, 32), new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.7 }));
+        scene.add(moon);
+
+        // Moon Orbit Ring
+        const orbPts = [];
+        for (let i = 0; i <= 128; i++) {
+            const a = (i / 128) * Math.PI * 2;
+            orbPts.push(new THREE.Vector3(R_MOON * Math.cos(a), 0, R_MOON * Math.sin(a)));
+        }
+        const moonOrbitLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(orbPts), new THREE.LineBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.5 }));
+        scene.add(moonOrbitLine);
+
+        // 4. Volumetric Shadow Cones (Umbra & Penumbra)
+        // Moon Umbra (Cone tapering to a point toward Earth)
+        const moonUmbraGeo = new THREE.ConeGeometry(0.65, 13.5, 32, 1, true);
+        moonUmbraGeo.rotateZ(Math.PI / 2);
+        moonUmbraGeo.translate(-6.75, 0, 0);
+        const moonUmbra = new THREE.Mesh(moonUmbraGeo, new THREE.MeshBasicMaterial({ color: 0x1E1B4B, transparent: true, opacity: 0.5, side: THREE.DoubleSide }));
+        moon.add(moonUmbra);
+
+        // Moon Penumbra (Cone expanding outward)
+        const moonPenumGeo = new THREE.ConeGeometry(2.2, 15.0, 32, 1, true);
+        moonPenumGeo.rotateZ(-Math.PI / 2);
+        moonPenumGeo.translate(-7.5, 0, 0);
+        const moonPenumbra = new THREE.Mesh(moonPenumGeo, new THREE.MeshBasicMaterial({ color: 0x312E81, transparent: true, opacity: 0.22, side: THREE.DoubleSide }));
+        moon.add(moonPenumbra);
+
+        // Earth Umbra (Extending opposite Sun, toward -X)
+        const earthUmbraGeo = new THREE.ConeGeometry(2.2, 22.0, 32, 1, true);
+        earthUmbraGeo.rotateZ(Math.PI / 2);
+        earthUmbraGeo.translate(-11.0, 0, 0);
+        const earthUmbra = new THREE.Mesh(earthUmbraGeo, new THREE.MeshBasicMaterial({ color: 0x1E1B4B, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
+        earth.add(earthUmbra);
+
+        // 2D Viewport Canvas
+        const cv2d = document.getElementById('view-eclipse-2d');
+        const ctx2d = cv2d.getContext('2d');
+
+        function draw2DView(orbDeg, betaDeg) {
+            ctx2d.clearRect(0, 0, 160, 160);
+            const cx = 80; const cy = 80;
+
+            const isSolar = (orbDeg < 30 || orbDeg > 330);
+            const isLunar = (orbDeg > 150 && orbDeg < 210);
+
+            if (isSolar) {
+                // Solar Eclipse View (Sun disk with Moon transiting across)
+                ctx2d.beginPath();
+                ctx2d.arc(cx, cy, 46, 0, Math.PI * 2);
+                ctx2d.fillStyle = '#FBBF24';
+                ctx2d.shadowColor = '#F59E0B'; ctx2d.shadowBlur = 15;
+                ctx2d.fill();
+                ctx2d.shadowBlur = 0;
+
+                // Relative offset of Moon across Sun disk
+                let diffAng = (orbDeg + 180) % 360 - 180;
+                let mx = cx - (diffAng * 4.5);
+                let my = cy - (betaDeg * 8.0);
+
+                ctx2d.beginPath();
+                ctx2d.arc(mx, my, 46, 0, Math.PI * 2);
+                ctx2d.fillStyle = '#0F172A';
+                ctx2d.fill();
+
+                // Corona glow during 100% totality
+                let dist = Math.sqrt(Math.pow(mx - cx, 2) + Math.pow(my - cy, 2));
+                if (dist < 3.0) {
+                    ctx2d.strokeStyle = '#FFFFFF';
+                    ctx2d.lineWidth = 3;
+                    ctx2d.stroke();
+                }
+            } else if (isLunar) {
+                // Lunar Eclipse View (Earth's reddish-dark shadow over the Full Moon)
+                let diffAng = orbDeg - 180;
+                let sx = cx + (diffAng * 4.0);
+                let sy = cy + (betaDeg * 8.0);
+
+                // Moon Disk
+                ctx2d.beginPath();
+                ctx2d.arc(cx, cy, 40, 0, Math.PI * 2);
+                ctx2d.fillStyle = '#E2E8F0';
+                ctx2d.fill();
+
+                // Earth Umbral Shadow Overlap
+                ctx2d.beginPath();
+                ctx2d.arc(sx, sy, 55, 0, Math.PI * 2);
+                ctx2d.fillStyle = 'rgba(153, 27, 27, 0.85)'; // Blood Moon Red
+                ctx2d.fill();
+            } else {
+                // Normal sky view
+                ctx2d.beginPath();
+                ctx2d.arc(cx, cy, 38, 0, Math.PI * 2);
+                ctx2d.fillStyle = '#334155';
+                ctx2d.fill();
+            }
+        }
+
+        let orbitDeg = 0.0;
+        let betaOffsetDeg = 0.0;
+        let isRun = true;
+        let orbSpeed = 2.0;
+
+        function updateEclipse() {
+            const rad = orbitDeg * (Math.PI / 180);
+            const bRad = betaOffsetDeg * (Math.PI / 180);
+
+            // Orbit with nodal inclination
+            const mx = R_MOON * Math.cos(rad);
+            const mz = -R_MOON * Math.sin(rad);
+            const my = R_MOON * Math.sin(rad) * Math.sin(bRad);
+
+            moon.position.set(mx, my, mz);
+
+            // Calculate obscuration & status
+            let status = "NO ECLIPSE";
+            let obsc = "0%";
+
+            if (orbitDeg < 12 || orbitDeg > 348) {
+                let distFromCenter = Math.abs(betaOffsetDeg);
+                if (distFromCenter < 0.25) {
+                    status = "TOTAL SOLAR ECLIPSE 🌑";
+                    obsc = "100% (Totality)";
+                } else if (distFromCenter < 1.4) {
+                    status = "PARTIAL SOLAR ECLIPSE 🌘";
+                    obsc = (100 - distFromCenter * 65).toFixed(0) + "%";
+                }
+                document.getElementById('e-syzygy').innerText = "Solar Conjunction (New Moon)";
+            } else if (Math.abs(orbitDeg - 180) < 12) {
+                let distFromCenter = Math.abs(betaOffsetDeg);
+                if (distFromCenter < 0.35) {
+                    status = "TOTAL LUNAR ECLIPSE 🔴";
+                    obsc = "100% (In Earth Umbra)";
+                } else if (distFromCenter < 1.6) {
+                    status = "PARTIAL LUNAR ECLIPSE 🌗";
+                    obsc = (100 - distFromCenter * 55).toFixed(0) + "%";
+                }
+                document.getElementById('e-syzygy').innerText = "Lunar Opposition (Full Moon)";
+            } else {
+                document.getElementById('e-syzygy').innerText = "Out of Syzygy Alignment";
+            }
+
+            document.getElementById('rng-orb-deg').value = orbitDeg.toFixed(1);
+            document.getElementById('rng-node-offset').value = betaOffsetDeg.toFixed(2);
+            document.getElementById('txt-orb-deg').innerText = orbitDeg.toFixed(1) + "°";
+            document.getElementById('txt-node-offset').innerText = betaOffsetDeg.toFixed(2) + "°";
+
+            document.getElementById('txt-eclipse-type').innerText = status;
+            document.getElementById('txt-eclipse-obsc').innerText = "Obscuration: " + obsc;
+            document.getElementById('e-node-dist').innerText = betaOffsetDeg.toFixed(2) + "° from Node";
+
+            draw2DView(orbitDeg, betaOffsetDeg);
+        }
+
+        window.setEclipseMode = function(mode, btn) {
+            document.querySelectorAll('.btn-ecl').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            if (mode === 'total-solar') { orbitDeg = 0.0; betaOffsetDeg = 0.0; }
+            if (mode === 'annular-solar') { orbitDeg = 0.0; betaOffsetDeg = 0.35; }
+            if (mode === 'total-lunar') { orbitDeg = 180.0; betaOffsetDeg = 0.0; }
+            if (mode === 'partial-lunar') { orbitDeg = 180.0; betaOffsetDeg = 0.85; }
+
+            updateEclipse();
+        };
+
+        window.setEclCam = function(mode) {
+            if (mode === 'iso') { camera.position.set(0, 26, 32); controls.target.set(0,0,0); }
+            if (mode === 'earth') { camera.position.set(1.5, 0.5, 0); controls.target.copy(moon.position); }
+            if (mode === 'profile') { camera.position.set(0, 0, 36); controls.target.set(0,0,0); }
+        };
+
+        document.getElementById('rng-orb-deg').oninput = (e) => { orbitDeg = parseFloat(e.target.value); updateEclipse(); };
+        document.getElementById('rng-node-offset').oninput = (e) => { betaOffsetDeg = parseFloat(e.target.value); updateEclipse(); };
+        document.getElementById('rng-ecl-speed').oninput = (e) => { orbSpeed = parseFloat(e.target.value); document.getElementById('txt-ecl-speed').innerText = orbSpeed.toFixed(1) + " days/sec"; };
+        document.getElementById('btn-toggle-eclipse-orbit').onclick = () => { isRun = !isRun; document.getElementById('btn-toggle-eclipse-orbit').innerText = isRun ? '⏸ Pause Orbit' : '▶ Resume Orbit'; };
+
+        let last = performance.now();
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - last) / 1000; last = now;
+
+            if (isRun) {
+                orbitDeg = (orbitDeg + (dt * orbSpeed / 27.32) * 360) % 360;
+                updateEclipse();
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        loop(performance.now());
+        updateEclipse();
+    })();
+</script>
+</body></html>

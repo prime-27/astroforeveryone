@@ -1,0 +1,439 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ancient Indian Astronomy</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="ancient-astronomy-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 340px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #FBBF24; margin-bottom: 2px;">Ancient Indian Astronomy</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Astronomers, Gola Yantra & Shanku Shadow</p>
+
+        <button id="btn-toggle-indian-motion" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Celestial Motion</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Select Ancient Astronomer</div>
+        <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px;">
+            <button class="btn-astro active" onclick="selectAstronomer('aryabhata', this)">🪐 Āryabhaṭa I (476 CE)</button>
+            <button class="btn-astro" onclick="selectAstronomer('varahamihira', this)">☀️ Varāhamihira (505 CE)</button>
+            <button class="btn-astro" onclick="selectAstronomer('brahmagupta', this)">🍎 Brahmagupta (598 CE)</button>
+            <button class="btn-astro" onclick="selectAstronomer('bhaskara2', this)">📐 Bhāskara II / Bhāskarāchārya (1114 CE)</button>
+            <button class="btn-astro" onclick="selectAstronomer('nilakantha', this)">🔄 Nīlakaṇṭha Somayājī (1444 CE)</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Observer Latitude (φ):</span><span id="txt-lat" style="color: #FBBF24; font-weight: 600;">23.18° N (Ujjain)</span>
+            </div>
+            <input type="range" id="rng-lat" min="0" max="40" step="0.5" value="23.18" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Sun Diurnal Angle (λ):</span><span id="txt-sun-deg" style="color: #FBBF24; font-weight: 600;">45.0°</span>
+            </div>
+            <input type="range" id="rng-sun" min="0" max="360" step="0.5" value="45.0" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Speed Engine:</span><span id="txt-speed" style="color: #58A6FF; font-weight: 600;">1.0 day/sec</span>
+            </div>
+            <input type="range" id="rng-speed" min="0.1" max="5.0" step="0.1" value="1.0" style="width: 100%; accent-color: #58A6FF; cursor: pointer;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Observatory Viewpoints</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-cam active" onclick="setObservatoryCam('iso')">3D Yantra</button>
+            <button class="btn-cam" onclick="setObservatoryCam('gnomon')">Shanku</button>
+            <button class="btn-cam" onclick="setObservatoryCam('polar')">Dhruva</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Instrument Layers</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; color: #C9D1D9;">
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-gola" checked style="margin-right:6px; accent-color:#FBBF24;">Gola Yantra (Armillary Rings)</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-shanku" checked style="margin-right:6px; accent-color:#38BDF8;">Shanku Yantra (Gnomon Shadow)</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-epicycle" checked style="margin-right:6px; accent-color:#34D399;">Manda / Shighra Epicycle Orbit</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-earth-spin" checked style="margin-right:6px; accent-color:#00E5FF;">Aryabhata Axial Earth Rotation</label>
+        </div>
+    </div>
+
+    <!-- Astronomer Scientific Fact Sheet Modal -->
+    <div id="astronomer-fact-card" style="position: absolute; top: 60px; right: 12px; width: 360px; background: rgba(13, 17, 23, 0.96); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 12px; padding: 14px; z-index: 150; max-height: calc(100% - 72px); overflow-y: auto; display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.85);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px;">
+            <div>
+                <h4 id="fact-name" style="font-size: 1.15rem; color: #FBBF24; font-weight: 700;">Āryabhaṭa I</h4>
+                <p id="fact-era" style="font-size: 0.68rem; color: #8B949E; text-transform: uppercase;">476–550 CE • Kusumapura / Nalanda</p>
+            </div>
+            <button onclick="closeAstronomerFact()" style="background: #21262D; border: 1px solid rgba(255,255,255,0.15); color: #C9D1D9; width: 24px; height: 24px; border-radius: 50%; font-size: 0.8rem; cursor: pointer;">✕</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #38BDF8; font-weight: 700; margin-bottom: 3px;">Major Treatises & Innovations</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; font-size: 0.72rem; margin-bottom: 8px;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 6px;"><span style="color:#8B949E; display:block; font-size:0.62rem;">Primary Treatises</span><span id="fact-text" style="color:#FBBF24; font-weight:600;">Āryabhaṭīya</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 6px;"><span style="color:#8B949E; display:block; font-size:0.62rem;">Cosmological Model</span><span id="fact-model" style="font-weight:600;">Axial Rotation & Epicycles</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 6px;"><span style="color:#8B949E; display:block; font-size:0.62rem;">Mathematics & Pi (π)</span><span id="fact-math" style="font-weight:600;">π ≈ 3.1416, Sines</span></div>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 4px 6px;"><span style="color:#8B949E; display:block; font-size:0.62rem;">Eclipse Physics</span><span id="fact-eclipse" style="color:#34D399; font-weight:600;">Earth/Moon Shadow Cone</span></div>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #38BDF8; font-weight: 700; margin-bottom: 3px;">Astronomical Commentary & Significance</div>
+        <div style="font-size: 0.72rem; color: #C9D1D9; line-height: 1.45; background: rgba(255, 255, 255, 0.02); border-radius: 6px; padding: 8px; border-left: 3px solid #FBBF24;" id="fact-desc">
+            Description.
+        </div>
+    </div>
+
+    <!-- Bottom Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 350px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">SIDDHĀNTIC ASTRONOMICAL TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Active Model:</span><span id="h-model" style="color:#FBBF24; font-weight:600;">Āryabhaṭa Diurnal Geocentric</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Equator (Vishuvadvritta):</span><span style="color:#38BDF8;">δ = 0.00° (Celestial Center)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Ecliptic Tilt (Krāntipāta):</span><span style="color:#38BDF8;">ε = 23.44° (Paramāpakkrama)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Shanku Shadow Length:</span><span id="h-shadow" style="color:#34D399; font-weight:600;">1.42 angulas</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Pole Star (Dhruva Tāra):</span><span id="h-dhruva" style="color:#58A6FF; font-weight:600;">Alt = 23.18° (Ujjain Meridian)</span></div>
+    </div>
+
+    <!-- UI Button Styles -->
+    <style>
+        .btn-astro { padding: 5px 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: left; }
+        .btn-astro:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-astro.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: bold; }
+
+        .btn-cam { padding: 4px; background: #0F172A; border: 1px solid #334155; color: #94A3B8; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; font-weight: 600; }
+        .btn-cam:hover { background: #1E293B; border-color: #38BDF8; color: #38BDF8; }
+        .btn-cam.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: bold; }
+    </style>
+</div>
+
+<!-- Three.js CDN Bundled Runtime -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const ASTRONOMERS_DB = {
+            "aryabhata": {
+                name: "Āryabhaṭa I (आर्यभट)", era: "476–550 CE • Kusumapura (Pataliputra) / Nalanda",
+                text: "Āryabhaṭīya & Āryabhaṭa-Siddhānta", model: "Daily Axial Earth Rotation + Epicycles",
+                math: "π ≈ 3.1416 (Irrational), Jya (Sine) Table", eclipse: "Lunar/Solar Shadow Geometry",
+                desc: "Aryabhata revolutionized Indian astronomy by asserting that the Earth is spherical and rotates continuously on its axis, causing the apparent diurnal motion of the stars (Gitikapada 1.9). He proved that eclipses are caused by the Moon entering Earth's shadow cone (Bha-chāyā) and formulated trigonometric sine (Jya) computation."
+            },
+            "varahamihira": {
+                name: "Varāhamihira (वराहमिहिर)", era: "505–587 CE • Ujjain (Avanti Observatory)",
+                text: "Pañcasiddhāntikā & Bṛhat Saṃhitā", model: "Synthesis of 5 Astronomical Siddhantas",
+                math: "Spherical Trigonometry, Gnomon Rules", eclipse: "Calculation of Nodes (Rahu/Ketu)",
+                desc: "Working at the prime meridian in Ujjain, Varahamihira synthesized five historic astronomical systems (Surya, Romaka, Paulisa, Vasistha, and Paitamaha). He perfected the Shanku Yantra (gnomon) shadow geometry for latitude determination and cardinal orientation (Dik-Sadhana)."
+            },
+            "brahmagupta": {
+                name: "Brahmagupta (ब्रह्मगुप्त)", era: "598–668 CE • Bhillamala (Bhinmal, Rajasthan)",
+                text: "Brāhmasphuṭasiddhānta & Khaṇḍakhādyaka", model: "Universal Gravitational Attraction",
+                math: "Zero & Negative Arithmetic, Quadratic Formula", eclipse: "Exact Parallax (Lambana) Calculation",
+                desc: "Brahmagupta recognized that all heavy objects are drawn toward the center of the Earth by an inherent attractive force (Gurutvakarshan): 'Bodies fall towards the Earth as it is in the nature of the Earth to attract bodies.' His treatises were translated in Baghdad as Sindhind, introducing Indian astronomy to the Islamic world."
+            },
+            "bhaskara2": {
+                name: "Bhāskara II / Bhāskarāchārya (भास्कराचार्य)", era: "1114–1185 CE • Patan / Sahyadri",
+                text: "Siddhānta Śiromaṇi (Golādhyāya)", model: "Differential Planetary Motion & Armillaries",
+                math: "Early Differential Calculus (Tatkalika-Gati)", eclipse: "Three-Dimensional Shadow Projections",
+                desc: "Bhaskara II formulated the Goladhyaya (Sphere Astronomy), detailing the exact construction and mathematical usage of the Gola Yantra (armillary sphere). He computed the instantaneous velocity of planets (Tatkalika-gati), foreshadowing the modern derivative centuries before Newton and Leibniz."
+            },
+            "nilakantha": {
+                name: "Nīlakaṇṭha Somayājī (नीलकण्ठ सोमयाजी)", era: "1444–1544 CE • Kerala School of Astronomy",
+                text: "Tantrasaṅgraha & Golasāra", model: "Quasi-Heliocentric Planetary Theory",
+                math: "Infinite Series (Madhava Calculus), Spherical Geometry", eclipse: "Drigganita Observational Corrections",
+                desc: "Nilakantha formulated a groundbreaking planetary model in 1500 CE where Mercury, Venus, Mars, Jupiter, and Saturn revolve around the Sun in eccentric epicycles, while the Sun in turn orbits the Earth. This model was mathematically identical to the Tychonic system developed in Europe decades later."
+            }
+        };
+
+        const EPSILON = 23.44 * (Math.PI / 180);
+        const R_GOLA = 9.0;
+
+        const container = document.getElementById('ancient-astronomy-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 18, 26);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.45));
+        const sunLight = new THREE.DirectionalLight(0xFFFFFF, 2.5);
+        sunLight.position.set(20, 25, 20);
+        scene.add(sunLight);
+
+        // Starfield Dust
+        const starsGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for (let i = 0; i < 1800; i++) {
+            const u = Math.random() * Math.PI * 2;
+            const v = Math.acos((Math.random() * 2) - 1);
+            const r = 120 + Math.random() * 80;
+            starCoords.push(r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+        }
+        starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.75, transparent: true, opacity: 0.85 })));
+
+        function makeLabel(text, color = '#FFFFFF', size = 2.4) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.font = 'bold 30px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, 256, 75);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(size, size * 0.25, 1);
+            return sprite;
+        }
+
+        // 1. Gola Yantra (Armillary Nested Rings)
+        const groupGola = new THREE.Group();
+        scene.add(groupGola);
+
+        function makeRing(radius, thickness, colorHex) {
+            const ringGeo = new THREE.RingGeometry(radius - thickness, radius + thickness, 64);
+            const mat = new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+            return new THREE.Mesh(ringGeo, mat);
+        }
+
+        // Celestial Equator (Vishuvadvritta)
+        const rEquator = makeRing(R_GOLA, 0.12, 0x00E5FF);
+        rEquator.rotation.x = Math.PI / 2;
+        const eqLabel = makeLabel('Vishuvadvritta (Equator)', '#00E5FF', 2.6);
+        eqLabel.position.set(0, 0, R_GOLA + 0.8);
+        groupGola.add(rEquator, eqLabel);
+
+        // Ecliptic Ring (Krāntivritta)
+        const groupEcliptic = new THREE.Group();
+        const rEcliptic = makeRing(R_GOLA, 0.14, 0xFBBF24);
+        rEcliptic.rotation.x = Math.PI / 2;
+        const eclLabel = makeLabel('Krāntivritta (Ecliptic 23.4°)', '#FBBF24', 2.6);
+        eclLabel.position.set(0, 0, -R_GOLA - 0.8);
+        groupEcliptic.add(rEcliptic, eclLabel);
+        groupEcliptic.rotation.x = EPSILON;
+        groupGola.add(groupEcliptic);
+
+        // Prime Meridian (Yāmyottaravritta)
+        const rMeridian = makeRing(R_GOLA, 0.10, 0xB388FF);
+        rMeridian.rotation.y = Math.PI / 2;
+        groupGola.add(rMeridian);
+
+        // Polar Axis (Dhruva-Yasti)
+        const axisGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -R_GOLA * 1.3, 0), new THREE.Vector3(0, R_GOLA * 1.3, 0)]);
+        const polarAxis = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0x00E5FF, linewidth: 2 }));
+        const ncpLabel = makeLabel('Dhruva Tāra (NCP)', '#38BDF8', 2.4);
+        ncpLabel.position.set(0, R_GOLA * 1.35, 0);
+        groupGola.add(polarAxis, ncpLabel);
+
+        // 2. Central Earth Globe & Aryabhata Axial Rotation
+        const earthGroup = new THREE.Group();
+        const earthMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(1.6, 32, 32),
+            new THREE.MeshStandardMaterial({ color: 0x0284C7, roughness: 0.45 })
+        );
+        earthGroup.add(earthMesh);
+        scene.add(earthGroup);
+
+        // 3. Shanku Yantra (Gnomon & Shadow Platform)
+        const groupShanku = new THREE.Group();
+        groupShanku.position.set(0, 1.62, 0);
+
+        const dialPlate = new THREE.Mesh(
+            new THREE.CircleGeometry(1.8, 32),
+            new THREE.MeshStandardMaterial({ color: 0x1E293B, side: THREE.DoubleSide })
+        );
+        dialPlate.rotation.x = Math.PI / 2;
+        groupShanku.add(dialPlate);
+
+        const gnomonRod = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.04, 0.08, 0.9, 16),
+            new THREE.MeshStandardMaterial({ color: 0xFBBF24, metalness: 0.8 })
+        );
+        gnomonRod.position.y = 0.45;
+        groupShanku.add(gnomonRod);
+
+        const shadowGeo = new THREE.BufferGeometry();
+        const shadowMesh = new THREE.Line(shadowGeo, new THREE.LineBasicMaterial({ color: 0x0F172A, linewidth: 4 }));
+        groupShanku.add(shadowMesh);
+        scene.add(groupShanku);
+
+        // 4. Planetary Epicyclic Motion (Manda & Shighra)
+        const groupEpicycle = new THREE.Group();
+        scene.add(groupEpicycle);
+
+        const R_DEFERENT = 5.5;
+        const defPts = [];
+        for (let i = 0; i <= 64; i++) {
+            const a = (i / 64) * Math.PI * 2;
+            defPts.push(new THREE.Vector3(R_DEFERENT * Math.cos(a), 0, R_DEFERENT * Math.sin(a)));
+        }
+        const deferentLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(defPts), new THREE.LineDashedMaterial({ color: 0x34D399, dashSize: 0.3, gapSize: 0.2 }));
+        deferentLine.computeLineDistances();
+        groupEpicycle.add(deferentLine);
+
+        const R_EPICYCLE = 1.4;
+        const epiPts = [];
+        for (let i = 0; i <= 48; i++) {
+            const a = (i / 48) * Math.PI * 2;
+            epiPts.push(new THREE.Vector3(R_EPICYCLE * Math.cos(a), 0, R_EPICYCLE * Math.sin(a)));
+        }
+        const epicycleRing = new THREE.Line(new THREE.BufferGeometry().setFromPoints(epiPts), new THREE.LineBasicMaterial({ color: 0xF59E0B }));
+        const epicycleCenter = new THREE.Group();
+        epicycleCenter.add(epicycleRing);
+        groupEpicycle.add(epicycleCenter);
+
+        const planetGraha = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), new THREE.MeshStandardMaterial({ color: 0xEF4444 }));
+        epicycleCenter.add(planetGraha);
+
+        // 5. Sun (Sūrya)
+        const sunMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.65, 24, 24),
+            new THREE.MeshBasicMaterial({ color: 0xFBBF24 })
+        );
+        scene.add(sunMesh);
+
+        // State variables
+        let currentAstronomerKey = "aryabhata";
+        let observerLatitude = 23.18;
+        let sunLambdaDeg = 45.0;
+        let isRunning = true;
+        let simSpeed = 1.0;
+        let earthRotationAngle = 0.0;
+
+        const factCard = document.getElementById('astronomer-fact-card');
+
+        window.selectAstronomer = function(key, btn) {
+            currentAstronomerKey = key;
+            document.querySelectorAll('.btn-astro').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const info = ASTRONOMERS_DB[key];
+            if (info) {
+                document.getElementById('fact-name').innerText = info.name;
+                document.getElementById('fact-era').innerText = info.era;
+                document.getElementById('fact-text').innerText = info.text;
+                document.getElementById('fact-model').innerText = info.model;
+                document.getElementById('fact-math').innerText = info.math;
+                document.getElementById('fact-eclipse').innerText = info.eclipse;
+                document.getElementById('fact-desc').innerText = info.desc;
+                factCard.style.display = 'block';
+
+                document.getElementById('h-model').innerText = info.model;
+            }
+        };
+
+        window.closeAstronomerFact = function() { factCard.style.display = 'none'; };
+
+        window.setObservatoryCam = function(mode) {
+            document.querySelectorAll('.btn-cam').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (mode === 'iso') { camera.position.set(0, 18, 26); controls.target.set(0, 0, 0); }
+            if (mode === 'gnomon') { camera.position.set(0, 4.5, 4.2); controls.target.set(0, 1.6, 0); }
+            if (mode === 'polar') { camera.position.set(0, 26, 0.1); controls.target.set(0, 0, 0); }
+        };
+
+        function updateObservatoryPhysics() {
+            const rad = sunLambdaDeg * (Math.PI / 180);
+
+            // True Sūrya Position on the Ecliptic (Krāntivritta)
+            const sx = R_GOLA * Math.cos(rad);
+            const sy = -R_GOLA * Math.sin(rad) * Math.sin(EPSILON);
+            const sz = R_GOLA * Math.sin(rad) * Math.cos(EPSILON);
+            sunMesh.position.set(sx, sy, sz);
+
+            // Shanku Gnomon Shadow Calculation
+            const sunDir = new THREE.Vector3(sx, sy, sz).normalize();
+            const shadowLen = Math.max(0.2, 0.9 / Math.max(0.1, sunDir.y));
+            const shadowEnd = new THREE.Vector3(-sunDir.x * shadowLen, 0.02, -sunDir.z * shadowLen);
+
+            shadowGeo.setFromPoints([new THREE.Vector3(0, 0.02, 0), shadowEnd]);
+
+            // Epicycle Animation (Manda/Shighra correction)
+            const defAngle = rad * 1.5;
+            const epiAngle = rad * 4.0;
+            const cx = R_DEFERENT * Math.cos(defAngle);
+            const cz = R_DEFERENT * Math.sin(defAngle);
+            epicycleCenter.position.set(cx, 0, cz);
+            planetGraha.position.set(R_EPICYCLE * Math.cos(epiAngle), 0, R_EPICYCLE * Math.sin(epiAngle));
+
+            // Telemetry Updates
+            document.getElementById('txt-sun-deg').innerText = `${sunLambdaDeg.toFixed(1)}°`;
+            document.getElementById('h-shadow').innerText = `${(shadowLen * 12).toFixed(2)} angulas`;
+            document.getElementById('h-dhruva').innerText = `Alt = ${observerLatitude.toFixed(2)}° (Ujjain)`;
+        }
+
+        // UI Event Listeners
+        document.getElementById('rng-lat').oninput = (e) => {
+            observerLatitude = parseFloat(e.target.value);
+            document.getElementById('txt-lat').innerText = `${observerLatitude.toFixed(2)}° N`;
+            updateObservatoryPhysics();
+        };
+
+        document.getElementById('rng-sun').oninput = (e) => {
+            sunLambdaDeg = parseFloat(e.target.value);
+            updateObservatoryPhysics();
+        };
+
+        document.getElementById('rng-speed').oninput = (e) => {
+            simSpeed = parseFloat(e.target.value);
+            document.getElementById('txt-speed').innerText = `${simSpeed.toFixed(1)} day/sec`;
+        };
+
+        document.getElementById('btn-toggle-indian-motion').onclick = () => {
+            isRunning = !isRunning;
+            document.getElementById('btn-toggle-indian-motion').innerText = isRunning ? '⏸ Pause Celestial Motion' : '▶ Resume Celestial Motion';
+        };
+
+        document.getElementById('chk-gola').onchange = e => groupGola.visible = e.target.checked;
+        document.getElementById('chk-shanku').onchange = e => groupShanku.visible = e.target.checked;
+        document.getElementById('chk-epicycle').onchange = e => groupEpicycle.visible = e.target.checked;
+
+        // Continuous Animation Loop
+        let lastTime = performance.now();
+
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - lastTime) / 1000.0;
+            lastTime = now;
+
+            if (isRunning) {
+                sunLambdaDeg = (sunLambdaDeg + dt * simSpeed * 15.0) % 360.0;
+                document.getElementById('rng-sun').value = sunLambdaDeg;
+
+                if (document.getElementById('chk-earth-spin').checked) {
+                    earthRotationAngle += dt * simSpeed * 2.5;
+                    earthGroup.rotation.y = earthRotationAngle;
+                }
+
+                updateObservatoryPhysics();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.onresize = () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+
+        loop(performance.now());
+        selectAstronomer('aryabhata');
+    })();
+</script>
+</body></html>

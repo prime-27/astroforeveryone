@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tonight's Sky & Lunar Ephemeris</title>
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #172033 0%, #070B14 45%, #02040A 100%);
+    color: #E6EDF3;
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+#sky-report-widget {
+    width: calc(100% - 30px);
+    max-width: 1150px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #070B14;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.75);
+}
+.sky-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+.sky-title { margin: 0; color: #FBBF24; font-size: 1.3rem; font-weight: 700; }
+.sky-location { margin: 5px 0 0; color: #8B949E; font-size: 0.74rem; }
+.sky-location strong { color: #38BDF8; }
+.sky-actions { display: flex; align-items: center; gap: 14px; }
+.save-button {
+    border: 1px solid #2EA043;
+    background: #238636;
+    color: white;
+    padding: 8px 13px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.save-button:hover { background: #2EA043; }
+.designer { text-align: right; }
+.designer-label { color: #FBBF24; font-size: 0.62rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.designer-name { color: white; font-size: 0.90rem; font-weight: 700; }
+
+.date-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    background: rgba(13,17,23,0.85);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.date-controls label { font-size: 0.72rem; color: #8B949E; font-weight: 600; }
+.date-controls input[type="date"] {
+    background: #161B22;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #E6EDF3;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-family: monospace;
+}
+.date-controls button {
+    background: #1F6FEB;
+    border: none;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.70rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.date-controls button:hover { background: #388BFd; }
+
+.top-grid {
+    display: grid;
+    grid-template-columns: 285px 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.card {
+    background: rgba(13,17,23,0.92);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 15px;
+}
+.section-label {
+    margin-bottom: 10px;
+    color: #79C0FF;
+    font-size: 0.70rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.moon-card {
+    text-align: center;
+    border-color: rgba(56,189,248,0.28);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#moon-phase-name { color: #FBBF24; font-size: 1.15rem; font-weight: 700; margin: 10px 0 5px; }
+#moon-position { margin-top: 5px; margin-bottom: 12px; color: #38BDF8; font-family: monospace; font-size: 0.72rem; }
+.moon-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+.stat {
+    padding: 8px;
+    text-align: left;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+}
+.stat-label { display: block; color: #8B949E; font-size: 0.59rem; }
+.stat-value { display: block; margin-top: 2px; color: white; font-family: monospace; font-size: 0.72rem; font-weight: 600; }
+
+.conditions-card { display: flex; flex-direction: column; justify-content: space-between; }
+.conditions-text { margin: 0; color: #C9D1D9; font-size: 0.76rem; line-height: 1.65; }
+.conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 7px;
+    margin-top: 15px;
+}
+.condition {
+    padding: 8px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+}
+.condition-label { display: block; color: #8B949E; font-size: 0.59rem; }
+.condition-value { display: block; margin-top: 3px; font-family: monospace; font-size: 0.75rem; font-weight: 700; }
+.sun-time { color: #FBBF24; }
+.dusk-time { color: #38BDF8; }
+.dawn-time { color: #A78BFA; }
+.morning-time { color: #34D399; }
+
+.planet-card {
+    padding: 15px;
+    background: rgba(13,17,23,0.92);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+th {
+    padding: 8px 7px;
+    text-align: left;
+    color: #79C0FF;
+    font-size: 0.61rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.13);
+}
+td { padding: 9px 7px; border-bottom: 1px solid rgba(255,255,255,0.055); white-space: nowrap; }
+.body-name { font-weight: 700; }
+.time { font-family: monospace; }
+.rise { color: #34D399; }
+.transit { color: #CBD5E1; }
+.set { color: #F87171; }
+.altitude { color: #38BDF8; font-family: monospace; }
+.magnitude { color: #F8FAFC; font-family: monospace; }
+.best-time { color: #FBBF24; font-family: monospace; font-weight: 700; }
+.max-altitude { color: #38BDF8; font-family: monospace; font-weight: 700; }
+
+.status { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.58rem; font-weight: 700; }
+.status-visible { color: #34D399; background: rgba(52,211,153,0.13); border: 1px solid rgba(52,211,153,0.45); }
+.status-low { color: #FBBF24; background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.40); }
+.status-below { color: #F87171; background: rgba(248,113,113,0.10); border: 1px solid rgba(248,113,113,0.35); }
+.status-error { color: #F87171; }
+
+.visibility-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; color: #8B949E; font-size: 0.62rem; }
+.legend-item { padding: 4px 7px; border-radius: 5px; background: rgba(255,255,255,0.025); }
+.update-status { margin-top: 12px; text-align: right; color: #64748B; font-family: monospace; font-size: 0.63rem; }
+.update-ok { color: #34D399; }
+.update-error { color: #F87171; }
+
+@media(max-width:720px) {
+    #sky-report-widget { width: calc(100% - 10px); margin: 5px auto; padding: 12px; }
+    .top-grid { grid-template-columns: 1fr; }
+    .sky-actions { width: 100%; justify-content: space-between; }
+    .conditions-grid { grid-template-columns: repeat(2,1fr); }
+    table { min-width: 1100px; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="sky-report-widget">
+
+<!-- HEADER -->
+<div class="sky-header">
+    <div>
+        <h2 class="sky-title">Tonight's Sky & Lunar Ephemeris</h2>
+        <p class="sky-location">
+            Observatory: <strong>Secunderabad / Hyderabad (17.40° N, 78.50° E)</strong> • <span id="current-live-date">Loading...</span>
+        </p>
+    </div>
+    <div class="sky-actions">
+        <button id="btn-save-sky-card" class="save-button">💾 Save Card Image</button>
+        <div class="designer">
+            <div class="designer-label">Observatory Designer</div>
+            <div class="designer-name">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+</div>
+
+<!-- DATE SELECTOR CONTROLS -->
+<div class="date-controls">
+    <label for="sky-date-picker">Select Observation Date:</label>
+    <input type="date" id="sky-date-picker">
+    <button id="btn-today">Today</button>
+</div>
+
+<!-- MOON + CONDITIONS -->
+<div class="top-grid">
+
+<!-- MOON -->
+<div class="card moon-card">
+    <div class="section-label">🌕 Moon Phase & Metrics</div>
+    <div id="moon-phase-name">Calculating...</div>
+    <div id="moon-position">--</div>
+    <div class="moon-stats">
+        <div class="stat">
+            <span class="stat-label">Illumination</span>
+            <span id="moon-illum-val" class="stat-value">--</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Lunar Age</span>
+            <span id="moon-age-val" class="stat-value">--</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Moonrise</span>
+            <span id="moonrise-val" class="stat-value rise">--</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Moonset</span>
+            <span id="moonset-val" class="stat-value set">--</span>
+        </div>
+    </div>
+</div>
+
+<!-- CONDITIONS -->
+<div class="card conditions-card">
+    <div>
+        <div class="section-label">🔭 Evening → Early Morning Observing Window</div>
+        <p id="observing-conditions-text" class="conditions-text">Calculating astronomical conditions...</p>
+    </div>
+    <div class="conditions-grid">
+        <div class="condition">
+            <span class="condition-label">Sunset</span>
+            <span id="sunset-val" class="condition-value sun-time">--</span>
+        </div>
+        <div class="condition">
+            <span class="condition-label">Astronomical Dusk</span>
+            <span id="dusk-val" class="condition-value dusk-time">--</span>
+        </div>
+        <div class="condition">
+            <span class="condition-label">Astronomical Dawn</span>
+            <span id="dawn-val" class="condition-value dawn-time">--</span>
+        </div>
+        <div class="condition">
+            <span class="condition-label">Sunrise</span>
+            <span id="sunrise-val" class="condition-value morning-time">--</span>
+        </div>
+        <div class="condition">
+            <span class="condition-label">Night Length</span>
+            <span id="night-length-val" class="condition-value">--</span>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- PLANETS -->
+<div class="planet-card">
+<div class="section-label">🪐 Planetary Visibility • Evening → Early Morning • Hyderabad / IST</div>
+<table>
+<thead>
+<tr>
+    <th>Body</th>
+    <th>Evening</th>
+    <th>Best Time</th>
+    <th>Max Alt.</th>
+    <th>Early Morning</th>
+    <th>Rise</th>
+    <th>Transit</th>
+    <th>Set</th>
+    <th>Magnitude</th>
+    <th>Status</th>
+</tr>
+</thead>
+<tbody id="planetTable">
+<tr><td colspan="10">Initializing ephemeris engine...</td></tr>
+</tbody>
+</table>
+<div class="visibility-legend">
+    <span class="legend-item">🟢 Visible all night</span>
+    <span class="legend-item">🟢 Evening visible</span>
+    <span class="legend-item">🟢 Early Morning visible</span>
+    <span class="legend-item">🟡 Very low</span>
+    <span class="legend-item">🔴 Not visible tonight</span>
+</div>
+</div>
+
+<div id="update-status" class="update-status">Initializing...</div>
+
+</div>
+
+<script>
+const OBSERVER_LATITUDE = 17.40;
+const OBSERVER_LONGITUDE = 78.50;
+const OBSERVER_HEIGHT = 500;
+
+const observer = new Astronomy.Observer(OBSERVER_LATITUDE, OBSERVER_LONGITUDE, OBSERVER_HEIGHT);
+
+const PLANETS = [
+    { body: Astronomy.Body.Mercury, name: "☿ Mercury", color: "#A5A5A5" },
+    { body: Astronomy.Body.Venus, name: "♀ Venus", color: "#FDE68A" },
+    { body: Astronomy.Body.Mars, name: "♂ Mars", color: "#EF4444" },
+    { body: Astronomy.Body.Jupiter, name: "♃ Jupiter", color: "#F59E0B" },
+    { body: Astronomy.Body.Saturn, name: "♄ Saturn", color: "#FDE68A" }
+];
+
+function astroDate(value) {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (value.date instanceof Date) return value.date;
+    return null;
+}
+
+function formatIST(date) {
+    if (!date) return "--";
+    return date.toLocaleTimeString("en-IN", {
+        hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Kolkata"
+    });
+}
+
+function formatDateIST(date) {
+    return date.toLocaleDateString("en-IN", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata"
+    });
+}
+
+function getMoonPhaseName(angle) {
+    const a = ((angle % 360) + 360) % 360;
+    if (a < 22.5) return "New Moon 🌑";
+    if (a < 67.5) return "Waxing Crescent 🌒";
+    if (a < 112.5) return "First Quarter 🌓";
+    if (a < 157.5) return "Waxing Gibbous 🌔";
+    if (a < 202.5) return "Full Moon 🌕";
+    if (a < 247.5) return "Waning Gibbous 🌖";
+    if (a < 292.5) return "Last Quarter 🌗";
+    if (a < 337.5) return "Waning Crescent 🌘";
+    return "New Moon 🌑";
+}
+
+function searchSunAltitude(direction, startDate, days) {
+    try {
+        const result = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, direction, startDate, days, -18);
+        return astroDate(result);
+    } catch (error) {
+        return null;
+    }
+}
+
+function calculateSun(now) {
+    let sunrise = null, sunset = null, dusk = null, dawn = null;
+    try { sunrise = astroDate(Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, now, 2)); } catch (e) {}
+    try { sunset = astroDate(Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, now, 2)); } catch (e) {}
+
+    if (sunrise) {
+        dawn = searchSunAltitude(+1, new Date(sunrise.getTime() - 12 * 60 * 60 * 1000), 1);
+    }
+    if (sunset) {
+        dusk = searchSunAltitude(-1, sunset, 1);
+    }
+
+    document.getElementById("sunrise-val").textContent = formatIST(sunrise);
+    document.getElementById("sunset-val").textContent = formatIST(sunset);
+    document.getElementById("dusk-val").textContent = formatIST(dusk);
+    document.getElementById("dawn-val").textContent = formatIST(dawn);
+
+    if (dusk && dawn) {
+        let nightHours = (dawn.getTime() - dusk.getTime()) / (1000 * 60 * 60);
+        if (nightHours < 0) nightHours += 24;
+        document.getElementById("night-length-val").textContent = nightHours.toFixed(1) + " h";
+    } else {
+        document.getElementById("night-length-val").textContent = "--";
+    }
+    return { sunrise, sunset, dusk, dawn };
+}
+
+function calculateMoon(now) {
+    let phaseAngle = 0, illumination = 0, rise = null, set = null;
+    try { phaseAngle = Astronomy.MoonPhase(now); } catch (e) {}
+    try { illumination = Astronomy.Illumination(Astronomy.Body.Moon, now).phase_fraction; } catch (e) {}
+    try { rise = astroDate(Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, now, 2)); } catch (e) {}
+    try { set = astroDate(Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, now, 2)); } catch (e) {}
+
+    try {
+        const equator = Astronomy.Equator(Astronomy.Body.Moon, now, observer, true, true);
+        document.getElementById("moon-position").textContent = "RA " + equator.ra.toFixed(2) + "h • Dec " + equator.dec.toFixed(1) + "°";
+    } catch (error) {
+        document.getElementById("moon-position").textContent = "--";
+    }
+
+    const phaseName = getMoonPhaseName(phaseAngle);
+    const age = (phaseAngle / 360) * 29.530588;
+
+    document.getElementById("moon-phase-name").textContent = phaseName;
+    document.getElementById("moon-illum-val").textContent = (illumination * 100).toFixed(1) + "%";
+    document.getElementById("moon-age-val").textContent = age.toFixed(1) + " days";
+    document.getElementById("moonrise-val").textContent = formatIST(rise);
+    document.getElementById("moonset-val").textContent = formatIST(set);
+
+    return { phaseAngle, phaseName, illumination, age, rise, set };
+}
+
+function getPlanetPosition(body, date) {
+    const equator = Astronomy.Equator(body, date, observer, true, true);
+    const horizon = Astronomy.Horizon(date, observer, equator.ra, equator.dec, "normal");
+    return { ra: equator.ra, dec: equator.dec, distance: equator.dist, altitude: horizon.altitude, azimuth: horizon.azimuth };
+}
+
+function getRiseSet(body, start) {
+    let rise = null, set = null;
+    try { rise = astroDate(Astronomy.SearchRiseSet(body, observer, +1, start, 2)); } catch (e) {}
+    try { set = astroDate(Astronomy.SearchRiseSet(body, observer, -1, start, 2)); } catch (e) {}
+    return { rise, set };
+}
+
+function getTransit(body, start) {
+    try { return astroDate(Astronomy.SearchHourAngle(body, observer, 0, start, +1)); } catch (e) { return null; }
+}
+
+function getMagnitude(body, date) {
+    try { return Astronomy.Illumination(body, date).mag; } catch (e) { return null; }
+}
+
+function analyzeNightVisibility(body, nightStart, nightEnd) {
+    if (!nightStart || !nightEnd) return { eveningAltitude: null, morningAltitude: null, maxAltitude: null, bestTime: null };
+    let start = nightStart.getTime();
+    let end = nightEnd.getTime();
+    if (end <= start) end += 24 * 60 * 60 * 1000;
+
+    let maxAltitude = -90, bestTime = null, eveningAltitude = null, morningAltitude = null;
+    for (let t = start; t <= end; t += 10 * 60 * 1000) {
+        const actualTime = new Date(t);
+        try {
+            const position = getPlanetPosition(body, actualTime);
+            const altitude = position.altitude;
+            if (eveningAltitude === null) eveningAltitude = altitude;
+            morningAltitude = altitude;
+            if (altitude > maxAltitude) {
+                maxAltitude = altitude;
+                bestTime = actualTime;
+            }
+        } catch (error) {}
+    }
+    return { eveningAltitude, morningAltitude, maxAltitude, bestTime };
+}
+
+function getNightVisibilityStatus(data) {
+    if (!data || data.maxAltitude === null) return { text: "Unavailable", className: "status-error" };
+    if (data.maxAltitude < 0) return { text: "Not visible tonight", className: "status-below" };
+    if (data.maxAltitude < 10) return { text: "Very low", className: "status-low" };
+
+    const evening = data.eveningAltitude !== null && data.eveningAltitude >= 10;
+    const morning = data.morningAltitude !== null && data.morningAltitude >= 10;
+
+    if (evening && morning) return { text: "Visible all night", className: "status-visible" };
+    if (evening) return { text: "Evening visible", className: "status-visible" };
+    if (morning) return { text: "Early Morning visible", className: "status-visible" };
+    return { text: "Visible during night", className: "status-visible" };
+}
+
+function altitudeLabel(altitude) {
+    if (altitude === null || !Number.isFinite(altitude)) return "--";
+    if (altitude >= 10) return "✓ " + altitude.toFixed(0) + "°";
+    if (altitude >= 0) return "Low " + altitude.toFixed(0) + "°";
+    return "—";
+}
+
+function calculatePlanets(now, sun) {
+    const table = document.getElementById("planetTable");
+    table.innerHTML = "";
+    let successful = 0;
+
+    let nightStart = sun.sunset;
+    let nightEnd = sun.sunrise;
+    if (!nightStart || !nightEnd) return 0;
+
+    for (const planet of PLANETS) {
+        try {
+            const events = getRiseSet(planet.body, nightStart);
+            const transit = getTransit(planet.body, nightStart);
+            const night = analyzeNightVisibility(planet.body, nightStart, nightEnd);
+            let magnitude = getMagnitude(planet.body, night.bestTime || now);
+            const visibility = getNightVisibilityStatus(night);
+
+            const row = document.createElement("tr");
+            let magText = "--";
+            if (magnitude !== null && Number.isFinite(magnitude)) {
+                magText = (magnitude >= 0 ? "+" : "") + magnitude.toFixed(1);
+            }
+
+            row.innerHTML = `
+                <td class="body-name" style="color:${planet.color}">${planet.name}</td>
+                <td class="altitude">${altitudeLabel(night.eveningAltitude)}</td>
+                <td class="best-time">${formatIST(night.bestTime)}</td>
+                <td class="max-altitude">${night.maxAltitude !== null ? night.maxAltitude.toFixed(1) + "°" : "--"}</td>
+                <td class="altitude">${altitudeLabel(night.morningAltitude)}</td>
+                <td class="time rise">${formatIST(events.rise)}</td>
+                <td class="time transit">${formatIST(transit)}</td>
+                <td class="time set">${formatIST(events.set)}</td>
+                <td class="magnitude">${magText}</td>
+                <td><span class="status ${visibility.className}">${visibility.text}</span></td>
+            `;
+            table.appendChild(row);
+            successful++;
+        } catch (error) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td class="body-name" style="color:${planet.color}">${planet.name}</td><td colspan="9"><span class="status status-error">Calculation unavailable</span></td>`;
+            table.appendChild(row);
+        }
+    }
+    return successful;
+}
+
+function updateSummary(sun, moon) {
+    const element = document.getElementById("observing-conditions-text");
+    element.innerHTML = `
+        Planetary visibility for this date is evaluated continuously from 
+        <strong style="color:#FBBF24">sunset ${formatIST(sun.sunset)}</strong> through 
+        <strong style="color:#A78BFA">early-morning sunrise ${formatIST(sun.sunrise)}</strong>. 
+        Astronomical darkness begins at <strong style="color:#38BDF8">${formatIST(sun.dusk)}</strong> and ends at <strong style="color:#A78BFA">${formatIST(sun.dawn)}</strong>. 
+        The Moon is in the <strong style="color:#FBBF24">${moon.phaseName}</strong> phase with <strong style="color:#38BDF8">${(moon.illumination * 100).toFixed(1)}%</strong> illumination.
+    `;
+}
+
+function updateSkyForDate(targetDate) {
+    const status = document.getElementById("update-status");
+    if (typeof Astronomy === "undefined") {
+        status.innerHTML = `<span class="update-error">⚠ Astronomy Engine did not load.</span>`;
+        return;
+    }
+
+    try {
+        document.getElementById("current-live-date").textContent = formatDateIST(targetDate);
+        
+        const sun = calculateSun(targetDate);
+        const moon = calculateMoon(targetDate);
+        const count = calculatePlanets(targetDate, sun);
+        updateSummary(sun, moon);
+
+        status.innerHTML = `<span class="update-ok">✓ Ephemeris computed for ${formatDateIST(targetDate)} • ${count}/${PLANETS.length} planets calculated</span>`;
+    } catch (error) {
+        status.innerHTML = `<span class="update-error">⚠ ${error.message}</span>`;
+    }
+}
+
+// Initialize Date Picker & Buttons
+const datePicker = document.getElementById("sky-date-picker");
+
+function getLocalDateInputValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+const today = new Date();
+datePicker.value = getLocalDateInputValue(today);
+
+datePicker.addEventListener("change", (e) => {
+    if (e.target.value) {
+        // Parse yyyy-mm-dd explicitly into local time start of day
+        const parts = e.target.value.split("-");
+        const selectedDate = new Date(parts[0], parts[1] - 1, parts[2], 18, 0, 0); // Evening reference baseline
+        updateSkyForDate(selectedDate);
+    }
+});
+
+document.getElementById("btn-today").addEventListener("click", () => {
+    const now = new Date();
+    datePicker.value = getLocalDateInputValue(now);
+    updateSkyForDate(now);
+});
+
+window.addEventListener("load", function() {
+    updateSkyForDate(new Date());
+});
+
+function saveSkyReportImage() {
+    const button = document.getElementById("btn-save-sky-card");
+    if (typeof html2canvas === "undefined") { alert("Image export library not loaded."); return; }
+    const original = button.textContent;
+    button.textContent = "⏳ Generating...";
+    html2canvas(document.getElementById("sky-report-widget"), { backgroundColor: "#070B14", scale: 2, useCORS: true, logging: false })
+    .then(canvas => {
+        const link = document.createElement("a");
+        const dateStr = datePicker.value || new Date().toISOString().slice(0,10);
+        link.download = "Hyderabad_Sky_Ephemeris_" + dateStr + ".png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        button.textContent = original;
+    })
+    .catch(error => {
+        alert("Unable to create image.");
+        button.textContent = original;
+    });
+}
+
+document.getElementById("btn-save-sky-card").addEventListener("click", saveSkyReportImage);
+</script>
+
+</body>
+</html>

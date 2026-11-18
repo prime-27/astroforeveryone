@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ASTRONOMY SIMULATIONS &amp; TOOLS</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 700px; margin: 0 auto; background: #03060B; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 40px 24px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 16px 50px rgba(0,0,0,0.9); box-sizing: border-box; position: relative; overflow: hidden; text-align: center;">
+    
+    <!-- Background Animated Canvas (Non-Interactive Ambient 3D Solar System) -->
+    <canvas id="ambient-solar-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.4;"></canvas>
+
+    <!-- Foreground Content Container -->
+    <div style="position: relative; z-index: 2;">
+        
+        <h1 style="font-size: 2rem; color: #FBBF24; margin: 0; font-weight: 800; letter-spacing: 2px; text-shadow: 0 0 20px rgba(251,191,36,0.3);">
+            ASTRONOMY SIMULATIONS & TOOLS
+        </h1>
+
+    </div>
+
+    <!-- Ambient Non-Interactive 3D Solar System Background Animation Script -->
+    <script>
+        (function(){
+            const cv = document.getElementById('ambient-solar-canvas');
+            const ctx = cv.getContext('2d');
+
+            function resizeCanvas() {
+                cv.width = cv.parentElement.offsetWidth;
+                cv.height = cv.parentElement.offsetHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const planets = [
+                { name: 'Mercury', dist: 60, size: 3, color: '#A5A5A5', speed: 0.03, angle: Math.random() * Math.PI },
+                { name: 'Venus', dist: 95, size: 5, color: '#E3BB7B', speed: 0.02, angle: Math.random() * Math.PI },
+                { name: 'Earth', dist: 135, size: 5.5, color: '#38BDF8', speed: 0.015, angle: Math.random() * Math.PI },
+                { name: 'Mars', dist: 175, size: 4, color: '#EF4444', speed: 0.012, angle: Math.random() * Math.PI },
+                { name: 'Jupiter', dist: 225, size: 9, color: '#F59E0B', speed: 0.008, angle: Math.random() * Math.PI },
+                { name: 'Saturn', dist: 275, size: 7.5, color: '#FDE68A', speed: 0.006, angle: Math.random() * Math.PI },
+                { name: 'Uranus', dist: 320, size: 6, color: '#67E8F9', speed: 0.004, angle: Math.random() * Math.PI },
+                { name: 'Neptune', dist: 365, size: 6, color: '#3B82F6', speed: 0.003, angle: Math.random() * Math.PI }
+            ];
+
+            function drawAmbientSolarSystem() {
+                ctx.clearRect(0, 0, cv.width, cv.height);
+
+                const cx = cv.width * 0.5;
+                const cy = cv.height * 0.5;
+
+                // Ambient Starfield
+                ctx.fillStyle = '#FFFFFF';
+                [[50,40,1],[200,70,1.2],[400,30,0.8],[700,90,1.5],[150,180,0.9],[650,150,1],[800,50,0.7],[300,190,1.1],[500,200,1]].forEach(([x,y,sz]) => {
+                    ctx.beginPath(); ctx.arc(x,y,sz,0,Math.PI*2); ctx.fill();
+                });
+
+                // Sun Glow
+                const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 55);
+                grad.addColorStop(0, '#FFFBEB');
+                grad.addColorStop(0.4, '#FBBF24');
+                grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(cx, cy, 55, 0, Math.PI * 2); ctx.fill();
+
+                ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2); ctx.fillStyle = '#FEF08A'; ctx.fill();
+
+                // Draw Orbits and Planets
+                planets.forEach(p => {
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, p.dist, p.dist * 0.4, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const px = cx + p.dist * Math.cos(p.angle);
+                    const py = cy + (p.dist * 0.4) * Math.sin(p.angle);
+
+                    const pGrad = ctx.createRadialGradient(px - 2, py - 2, 0.5, px, py, p.size);
+                    pGrad.addColorStop(0, '#FFFFFF');
+                    pGrad.addColorStop(0.4, p.color);
+                    pGrad.addColorStop(1, '#000000');
+
+                    if (p.name === 'Saturn') {
+                        ctx.save();
+                        ctx.translate(px, py); ctx.rotate(0.3);
+                        ctx.beginPath(); ctx.ellipse(0, 0, p.size * 2.2, p.size * 0.6, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(253, 230, 138, 0.55)'; ctx.fill();
+                        ctx.strokeStyle = '#D97706'; ctx.lineWidth = 1.5; ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(px, py, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = pGrad;
+                    ctx.fill();
+
+                    p.angle += p.speed;
+                });
+
+                requestAnimationFrame(drawAmbientSolarSystem);
+            }
+
+            drawAmbientSolarSystem();
+        })();
+    </script>
+</div>
+</body></html>

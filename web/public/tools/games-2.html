@@ -1,0 +1,321 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>🚀 Cosmic Vanguard: Deep Space Interceptor</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 900px; margin: 0 auto; background: #070B14; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 20px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 12px 40px rgba(0,0,0,0.85); box-sizing: border-box;">
+    
+    <!-- Game Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 style="font-size: 1.25rem; color: #FBBF24; margin: 0; font-weight: 700;">🚀 Cosmic Vanguard: Deep Space Interceptor</h2>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 3px 0 0 0;">Pilot your probe across orbits, dodge high-velocity asteroid belts, harvest cosmic energy, and ace astrophysics trivia!</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 12px; text-align: center;">
+                <div style="font-size: 0.60rem; text-transform: uppercase; color: #34D399; font-weight: 700;">Score</div>
+                <div id="vanguard-score" style="font-size: 1.05rem; color: #FFFFFF; font-weight: 700; font-family: monospace;">0</div>
+            </div>
+            <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 8px; padding: 6px 12px; text-align: center;">
+                <div style="font-size: 0.60rem; text-transform: uppercase; color: #F87171; font-weight: 700;">Hull Integrity</div>
+                <div id="vanguard-shields" style="font-size: 1.05rem; color: #F87171; font-weight: 700; font-family: monospace;">100%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Canvas Arena -->
+    <div style="position: relative; width: 100%; height: 420px; background: #02040A; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; overflow: hidden; cursor: crosshair;">
+        <canvas id="vanguard-canvas" width="860" height="420" style="display: block; width: 100%; height: 100%;"></canvas>
+        
+        <!-- Overlay Screen -->
+        <div id="vanguard-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.90); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; text-align: center; padding: 20px; box-sizing: border-box;">
+            <h3 id="v-overlay-title" style="font-size: 1.6rem; color: #FBBF24; margin: 0 0 8px 0;">Ready for Launch, Commander?</h3>
+            <p id="v-overlay-desc" style="font-size: 0.8rem; color: #94A3B8; max-width: 440px; margin: 0 0 18px 0; line-height: 1.4;">
+                Use your Mouse or Touch to steer your probe. Intercept orbiting planets for high scores, harvest blue energy cores, avoid hazardous asteroid fields, and unlock astronomy mastery!
+            </p>
+            <button onclick="startVanguardGame()" style="background: #238636; border: 1px solid #2EA043; color: white; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(35,134,54,0.6);">🚀 Start Mission</button>
+        </div>
+    </div>
+
+    <!-- Interactive Trivia Modal / Banner -->
+    <div id="v-trivia-box" style="display: none; margin-top: 12px; background: rgba(13, 17, 23, 0.96); border: 1px solid rgba(251, 191, 36, 0.5); border-radius: 8px; padding: 14px 18px; z-index: 30;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 0.65rem; text-transform: uppercase; color: #FBBF24; font-weight: 700;">⚡ Planetary Discovery Checkpoint</span>
+            <span style="font-size: 0.7rem; color: #38BDF8; font-family: monospace;">Bonus Quiz Active</span>
+        </div>
+        <p id="v-trivia-question" style="font-size: 0.8rem; color: #E6EDF3; margin: 0 0 10px 0; font-weight: 600;"></p>
+        <div id="v-trivia-options" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;"></div>
+    </div>
+
+    <!-- Designer Credit Footer -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.70rem; color: #8B949E; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+        <span>Controls: Move Mouse / Touch to guide probe</span>
+        <span style="color: #FBBF24; font-weight: 600;">Designed by Ravi Raja Pothineni</span>
+    </div>
+
+    <!-- Game Engine Script -->
+    <script>
+        const vCanvas = document.getElementById('vanguard-canvas');
+        const vCtx = vCanvas.getContext('2d');
+
+        let vScore = 0;
+        let vShields = 100;
+        let vRunning = false;
+        let shipObj = { x: 100, y: 210, radius: 14 };
+        let pointer = { x: 100, y: 210 };
+        let planetsList = [];
+        let debrisList = [];
+        let energyOrbs = [];
+        let starsBg = [];
+
+        const questionsPool = [
+            { q: "What is the primary constituent of the atmosphere of Venus?", options: ["Carbon Dioxide", "Oxygen", "Methane", "Hydrogen"], correct: 0 },
+            { q: "Which spacecraft holds the record for being the farthest human-made object?", options: ["New Horizons", "Voyager 1", "Cassini", "Pioneer 10"], correct: 1 },
+            { q: "What causes the brilliant red color on the surface of Mars?", options: ["Volcanic Ash", "Iron Oxide (Rust)", "Red Sandstorms", "Liquid Lava"], correct: 1 },
+            { q: "Where is India's solar observation spacecraft Aditya-L1 stationed?", options: ["Lunar Orbit", "Mars Orbit", "Sun-Earth Lagrange Point 1", "Low Earth Orbit"], correct: 2 },
+            { q: "Which moon in our solar system features active ice-spewing geysers?", options: ["Europa", "Titan", "Enceladus", "Io"], correct: 2 }
+        ];
+
+        const celestialTargets = [
+            { name: "Mercury ☿", color: "#A5A5A5", radius: 16, points: 150 },
+            { name: "Venus ♀", color: "#E3BB7B", radius: 20, points: 200 },
+            { name: "Mars ♂", color: "#EF4444", radius: 18, points: 250 },
+            { name: "Jupiter ♃", color: "#F59E0B", radius: 26, points: 300 },
+            { name: "Saturn ♄", color: "#FDE68A", radius: 24, points: 350 }
+        ];
+
+        // Generate Starfield
+        for (let i = 0; i < 90; i++) {
+            starsBg.push({ x: Math.random() * vCanvas.width, y: Math.random() * vCanvas.height, size: Math.random() * 1.6, alpha: Math.random() });
+        }
+
+        vCanvas.addEventListener('mousemove', (e) => {
+            const rect = vCanvas.getBoundingClientRect();
+            pointer.x = (e.clientX - rect.left) * (vCanvas.width / rect.width);
+            pointer.y = (e.clientY - rect.top) * (vCanvas.height / rect.height);
+        });
+
+        vCanvas.addEventListener('touchmove', (e) => {
+            const rect = vCanvas.getBoundingClientRect();
+            if (e.touches.length > 0) {
+                pointer.x = (e.touches[0].clientX - rect.left) * (vCanvas.width / rect.width);
+                pointer.y = (e.touches[0].clientY - rect.top) * (vCanvas.height / rect.height);
+            }
+        });
+
+        function startVanguardGame() {
+            vScore = 0;
+            vShields = 100;
+            vRunning = true;
+            document.getElementById('vanguard-score').innerText = vScore;
+            document.getElementById('vanguard-shields').innerText = vShields + "%";
+            document.getElementById('vanguard-overlay').style.display = 'none';
+            document.getElementById('v-trivia-box').style.display = 'none';
+
+            planetsList = [];
+            debrisList = [];
+            energyOrbs = [];
+
+            spawnPlanetTarget();
+            for (let i = 0; i < 5; i++) spawnAsteroidDebris();
+            for (let i = 0; i < 3; i++) spawnEnergyOrb();
+
+            requestAnimationFrame(vanguardLoop);
+        }
+
+        function spawnPlanetTarget() {
+            const t = celestialTargets[Math.floor(Math.random() * celestialTargets.length)];
+            planetsList.push({
+                x: vCanvas.width + 60,
+                y: 50 + Math.random() * (vCanvas.height - 100),
+                radius: t.radius,
+                color: t.color,
+                name: t.name,
+                points: t.points,
+                vx: -1.2 - Math.random() * 0.8
+            });
+        }
+
+        function spawnAsteroidDebris() {
+            debrisList.push({
+                x: vCanvas.width + Math.random() * 400,
+                y: Math.random() * vCanvas.height,
+                radius: 10 + Math.random() * 12,
+                vx: -2.2 - Math.random() * 1.8,
+                vy: (Math.random() - 0.5) * 1.2
+            });
+        }
+
+        function spawnEnergyOrb() {
+            energyOrbs.push({
+                x: vCanvas.width + Math.random() * 300,
+                y: Math.random() * vCanvas.height,
+                radius: 8,
+                vx: -1.8 - Math.random() * 1.0
+            });
+        }
+
+        function triggerVanguardTrivia(planetName) {
+            vRunning = false;
+            const tBox = document.getElementById('v-trivia-box');
+            tBox.style.display = 'block';
+
+            const item = questionsPool[Math.floor(Math.random() * questionsPool.length)];
+            document.getElementById('v-trivia-question').innerText = `Intercepted ${planetName}! ${item.q}`;
+
+            const opts = document.getElementById('v-trivia-options');
+            opts.innerHTML = '';
+
+            item.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.style.cssText = "background: #1E293B; border: 1px solid rgba(255,255,255,0.15); color: #E6EDF3; padding: 8px; border-radius: 6px; font-size: 0.74rem; cursor: pointer; font-weight: 600; text-align: left;";
+                btn.onmouseover = () => btn.style.background = "#334155";
+                btn.onmouseout = () => btn.style.background = "#1E293B";
+                btn.onclick = () => {
+                    if (idx === item.correct) {
+                        vScore += 400;
+                        vShields = Math.min(100, vShields + 15);
+                    } else {
+                        vShields = Math.max(0, vShields - 10);
+                    }
+                    document.getElementById('vanguard-score').innerText = vScore;
+                    document.getElementById('vanguard-shields').innerText = vShields + "%";
+                    tBox.style.display = 'none';
+                    vRunning = true;
+                    requestAnimationFrame(vanguardLoop);
+                };
+                opts.appendChild(btn);
+            });
+        }
+
+        function vanguardLoop() {
+            if (!vRunning) return;
+
+            // Smooth interpolation
+            shipObj.x += (pointer.x - shipObj.x) * 0.18;
+            shipObj.y += (pointer.y - shipObj.y) * 0.18;
+
+            vCtx.fillStyle = '#02040A';
+            vCtx.fillRect(0, 0, vCanvas.width, vCanvas.height);
+
+            // Render Starfield
+            starsBg.forEach(s => {
+                vCtx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+                vCtx.fillRect(s.x, s.y, s.size, s.size);
+                s.x -= 0.4;
+                if (s.x < 0) s.x = vCanvas.width;
+            });
+
+            // Update & Draw Planets
+            planetsList.forEach((pl, idx) => {
+                pl.x += pl.vx;
+                vCtx.beginPath();
+                vCtx.arc(pl.x, pl.y, pl.radius, 0, Math.PI * 2);
+                vCtx.fillStyle = pl.color;
+                vCtx.shadowColor = pl.color;
+                vCtx.shadowBlur = 12;
+                vCtx.fill();
+                vCtx.shadowBlur = 0;
+
+                vCtx.fillStyle = "#FFFFFF";
+                vCtx.font = "bold 11px sans-serif";
+                vCtx.textAlign = "center";
+                vCtx.fillText(pl.name, pl.x, pl.y - pl.radius - 6);
+
+                const d = Math.hypot(shipObj.x - pl.x, shipObj.y - pl.y);
+                if (d < shipObj.radius + pl.radius) {
+                    vScore += pl.points;
+                    document.getElementById('vanguard-score').innerText = vScore;
+                    planetsList.splice(idx, 1);
+                    spawnPlanetTarget();
+                    triggerVanguardTrivia(pl.name);
+                    return;
+                }
+
+                if (pl.x < -60) {
+                    planetsList.splice(idx, 1);
+                    spawnPlanetTarget();
+                }
+            });
+
+            // Update & Draw Asteroid Debris
+            debrisList.forEach((ast, idx) => {
+                ast.x += ast.vx;
+                ast.y += ast.vy;
+
+                vCtx.beginPath();
+                vCtx.arc(ast.x, ast.y, ast.radius, 0, Math.PI * 2);
+                vCtx.fillStyle = "#64748B";
+                vCtx.fill();
+                vCtx.strokeStyle = "#94A3B8";
+                vCtx.lineWidth = 1.2;
+                vCtx.stroke();
+
+                const d = Math.hypot(shipObj.x - ast.x, shipObj.y - ast.y);
+                if (d < shipObj.radius + ast.radius) {
+                    vShields -= 20;
+                    document.getElementById('vanguard-shields').innerText = Math.max(0, vShields) + "%";
+                    debrisList.splice(idx, 1);
+                    spawnAsteroidDebris();
+
+                    if (vShields <= 0) {
+                        vRunning = false;
+                        document.getElementById('v-overlay-title').innerText = "💥 Hull Breached — Mission Failed";
+                        document.getElementById('v-overlay-desc').innerText = `Your ship was overwhelmed by debris. Final Score: ${vScore} points.`;
+                        document.getElementById('vanguard-overlay').style.display = 'flex';
+                        return;
+                    }
+                }
+
+                if (ast.x < -50) {
+                    debrisList.splice(idx, 1);
+                    spawnAsteroidDebris();
+                    vScore += 25;
+                    document.getElementById('vanguard-score').innerText = vScore;
+                }
+            });
+
+            // Update & Draw Energy Orbs
+            energyOrbs.forEach((orb, idx) => {
+                orb.x += -2.5;
+                vCtx.beginPath();
+                vCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+                vCtx.fillStyle = "#38BDF8";
+                vCtx.shadowColor = "#38BDF8";
+                vCtx.shadowBlur = 10;
+                vCtx.fill();
+                vCtx.shadowBlur = 0;
+
+                const d = Math.hypot(shipObj.x - orb.x, shipObj.y - orb.y);
+                if (d < shipObj.radius + orb.radius) {
+                    vScore += 100;
+                    vShields = Math.min(100, vShields + 10);
+                    document.getElementById('vanguard-score').innerText = vScore;
+                    document.getElementById('vanguard-shields').innerText = vShields + "%";
+                    energyOrbs.splice(idx, 1);
+                    spawnEnergyOrb();
+                }
+
+                if (orb.x < -30) {
+                    energyOrbs.splice(idx, 1);
+                    spawnEnergyOrb();
+                }
+            });
+
+            // Draw Ship
+            vCtx.save();
+            vCtx.translate(shipObj.x, shipObj.y);
+            vCtx.beginPath();
+            vCtx.moveTo(16, 0);
+            vCtx.lineTo(-10, -10);
+            vCtx.lineTo(-6, 0);
+            vCtx.lineTo(-10, 10);
+            vCtx.closePath();
+            vCtx.fillStyle = "#38BDF8";
+            vCtx.shadowColor = "#38BDF8";
+            vCtx.shadowBlur = 14;
+            vCtx.fill();
+            vCtx.restore();
+
+            requestAnimationFrame(vanguardLoop);
+        }
+    </script>
+</div>
+</body></html>

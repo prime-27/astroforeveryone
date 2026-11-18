@@ -1,0 +1,12 @@
+# HTTrack downloads of the old sites: their logs, caches and cookies may hold private data
+My Web Sites/
+My Web Sites2/
+# local working output of the importer
+image_cache/
+site/
+__pycache__/
+# React app build output and dependencies
+web/node_modules/
+web/dist/
+# local tool settings
+.claude/

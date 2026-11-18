@@ -1,0 +1,309 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Retrograde Motion</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="retrograde-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Geocentric Star Background Projection (Top-Right under badge) -->
+    <div style="position: absolute; top: 75px; right: 12px; width: 200px; background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px; text-align: center; z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.8);">
+        <div style="font-size: 0.68rem; color: #79C0FF; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Apparent Sky Track (Retrograde Loop)</div>
+        <canvas id="view-retro-2d" width="180" height="120" style="width: 180px; height: 120px; border-radius: 8px; background: #000; border: 1px solid #38BDF8; display: block; margin: 0 auto;"></canvas>
+        <div id="txt-motion-state" style="font-size: 0.78rem; color: #34D399; font-weight: 700; margin-top: 6px;">Prograde (Direct Motion)</div>
+        <div id="txt-apparent-ra" style="font-size: 0.68rem; color: #94A3B8; font-family: monospace;">Apparent Longitude: 124.2°</div>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 12px; left: 12px; width: 330px; max-height: calc(100% - 24px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #FBBF24; margin-bottom: 2px;">Retrograde Motion</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">Heliocentric vs. Geocentric Sightlines</p>
+
+        <button id="btn-toggle-retro-motion" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Motion</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Target Planet</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-retro active" onclick="setTargetPlanet('mars', this)">♂ Mars</button>
+            <button class="btn-retro" onclick="setTargetPlanet('jupiter', this)">♃ Jupiter</button>
+            <button class="btn-retro" onclick="setTargetPlanet('saturn', this)">♄ Saturn</button>
+            <button class="btn-retro" onclick="setTargetPlanet('venus', this)">♀ Venus (Inferior)</button>
+            <button class="btn-retro" onclick="setTargetPlanet('mercury', this)" style="grid-column: span 2;">☿ Mercury (Inferior)</button>
+        </div>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Orbital Speed:</span><span id="txt-retro-speed" style="color: #58A6FF; font-weight: 600;">30.0 days/sec</span>
+            </div>
+            <input type="range" id="rng-retro-speed" min="2.0" max="90.0" step="1.0" value="30.0" style="width: 100%; accent-color: #58A6FF;">
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Visual Aids</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; color: #C9D1D9;">
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-sightlines" checked style="margin-right:6px; accent-color:#FBBF24;">Earth-Planet Sightline Vectors</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-retro-trace" checked style="margin-right:6px; accent-color:#38BDF8;">3D Retrograde Projection Trace</label>
+            <label style="display:flex; align-items:center; cursor:pointer;"><input type="checkbox" id="chk-zodiac-sphere" checked style="margin-right:6px; accent-color:#818CF8;">Distant Celestial Sphere Grid</label>
+        </div>
+
+        <button onclick="clearRetroTrace()" style="width: 100%; padding: 5px; background: #21262D; border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; border-radius: 4px; font-size: 0.72rem; cursor: pointer; margin-top: 8px;">🔄 Clear Loop Path</button>
+    </div>
+
+    <!-- Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 330px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">PLANETARY ALIGNMENT TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Apparent Motion:</span><span id="t-motion-status" style="color:#34D399; font-weight:600;">Direct (Prograde)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Geometric Aspect:</span><span id="t-aspect" style="color:#58A6FF; font-weight:600;">Quadrature (~90°)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Earth-Planet Distance:</span><span id="t-distance" style="color:#58A6FF; font-weight:600;">1.42 AU (212.4M km)</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Synodic Period:</span><span id="t-synodic" style="color:#FBBF24; font-weight:600;">779.9 Days (2.13 Yrs)</span></div>
+    </div>
+
+    <style>
+        .btn-retro { padding: 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: center; }
+        .btn-retro:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-retro.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: bold; }
+    </style>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const PLANET_DATA = {
+            "mars": { name: "Mars", a: 18.0, period: 686.98, size: 0.36, col: 0xEF4444, synodic: "779.9 Days", isInferior: false },
+            "jupiter": { name: "Jupiter", a: 26.0, period: 4332.59, size: 1.15, col: 0xF59E0B, synodic: "398.9 Days", isInferior: false },
+            "saturn": { name: "Saturn", a: 34.0, period: 10759.22, size: 0.95, col: 0xFDE68A, synodic: "378.1 Days", isInferior: false },
+            "venus": { name: "Venus", a: 9.0, period: 224.70, size: 0.46, col: 0xE3BB7B, synodic: "583.9 Days", isInferior: true },
+            "mercury": { name: "Mercury", a: 6.0, period: 87.97, size: 0.28, col: 0xA5A5A5, synodic: "115.9 Days", isInferior: true }
+        };
+
+        const container = document.getElementById('retrograde-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 3000);
+        camera.position.set(0, 52, 68);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.4));
+        const sunLight = new THREE.PointLight(0xFFFFFF, 3.5, 400, 0.2);
+        scene.add(sunLight);
+
+        // Distant Background Celestial Sphere
+        const R_SKY = 44.0;
+        const skyGridPts = [];
+        for(let i=0; i<=128; i++){ const a = (i/128)*Math.PI*2; skyGridPts.push(new THREE.Vector3(R_SKY*Math.cos(a), 0, R_SKY*Math.sin(a))); }
+        const skyRing = new THREE.Line(new THREE.BufferGeometry().setFromPoints(skyGridPts), new THREE.LineBasicMaterial({ color: 0x818CF8, transparent: true, opacity: 0.4 }));
+        scene.add(skyRing);
+
+        // Sun
+        const sun = new THREE.Mesh(new THREE.SphereGeometry(2.2, 32, 32), new THREE.MeshBasicMaterial({ color: 0xFBBF24 }));
+        scene.add(sun);
+
+        // Earth & Orbit (r = 13.0, period = 365.25d)
+        const R_EARTH = 13.0;
+        const eRingPts = [];
+        for(let i=0; i<=128; i++){ const a = (i/128)*Math.PI*2; eRingPts.push(new THREE.Vector3(R_EARTH*Math.cos(a), 0, R_EARTH*Math.sin(a))); }
+        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(eRingPts), new THREE.LineBasicMaterial({ color: 0x0284C7, transparent: true, opacity: 0.6 })));
+
+        const earthMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 24), new THREE.MeshStandardMaterial({ color: 0x0284C7 }));
+        scene.add(earthMesh);
+
+        // Target Planet
+        let currentTargetKey = "mars";
+        let targetConfig = PLANET_DATA["mars"];
+
+        const targetOrbitLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 }));
+        scene.add(targetOrbitLine);
+
+        const targetMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 24, 24), new THREE.MeshStandardMaterial({ color: 0xEF4444 }));
+        scene.add(targetMesh);
+
+        function updateTargetOrbitTrack() {
+            const pts = [];
+            for(let i=0; i<=128; i++){ const a = (i/128)*Math.PI*2; pts.push(new THREE.Vector3(targetConfig.a*Math.cos(a), 0, targetConfig.a*Math.sin(a))); }
+            targetOrbitLine.geometry.setFromPoints(pts);
+            targetMesh.material.color.setHex(targetConfig.col);
+            targetMesh.scale.setScalar(targetConfig.size / 0.4);
+        }
+        updateTargetOrbitTrack();
+
+        // Sightline Ray from Earth through Target Planet onto Distant Celestial Sphere
+        const sightlineMesh = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: 0xFBBF24, dashSize: 0.5, gapSize: 0.25, linewidth: 2 }));
+        scene.add(sightlineMesh);
+
+        // Apparent Sky Trace Line on the Distant Sphere
+        const MAX_TRACE = 300;
+        const tracePositions = [];
+        const traceGeo = new THREE.BufferGeometry();
+        const traceMesh = new THREE.Line(traceGeo, new THREE.LineBasicMaterial({ color: 0x38BDF8, linewidth: 2.5 }));
+        scene.add(traceMesh);
+
+        // 2D Projection Canvas
+        const cv2d = document.getElementById('view-retro-2d');
+        const ctx2d = cv2d.getContext('2d');
+        const hist2D = [];
+
+        function draw2DApparentTrack(currentAngleDeg, isRetro) {
+            ctx2d.clearRect(0, 0, 180, 120);
+
+            // Background Reference Line
+            ctx2d.strokeStyle = '#1E293B'; ctx2d.lineWidth = 1;
+            ctx2d.beginPath(); ctx2d.moveTo(10, 60); ctx2d.lineTo(170, 60); ctx2d.stroke();
+
+            // Historical Trace
+            if (hist2D.length > 1) {
+                ctx2d.beginPath();
+                ctx2d.strokeStyle = '#38BDF8';
+                ctx2d.lineWidth = 2;
+                for (let i = 0; i < hist2D.length; i++) {
+                    const px = 10 + ((hist2D[i].x % 360) / 360) * 160;
+                    const py = 60 + hist2D[i].y * 25;
+                    if (i === 0) ctx2d.moveTo(px, py);
+                    else ctx2d.lineTo(px, py);
+                }
+                ctx2d.stroke();
+            }
+
+            // Current Planet Dot
+            const curX = 10 + ((currentAngleDeg % 360) / 360) * 160;
+            ctx2d.beginPath();
+            ctx2d.arc(curX, 60, 5, 0, Math.PI * 2);
+            ctx2d.fillStyle = isRetro ? '#EF4444' : '#FBBF24';
+            ctx2d.fill();
+        }
+
+        // State variables
+        let elapsedDays = 0.0;
+        let simSpeed = 30.0;
+        let isRunning = true;
+        let prevApparentAngle = 0;
+
+        function updateRetrograde() {
+            // Heliocentric Positions
+            const eAngle = ((elapsedDays / 365.25) * Math.PI * 2) % (Math.PI * 2);
+            const tAngle = ((elapsedDays / targetConfig.period) * Math.PI * 2) % (Math.PI * 2);
+
+            const ex = R_EARTH * Math.cos(eAngle);
+            const ez = R_EARTH * Math.sin(eAngle);
+            earthMesh.position.set(ex, 0, ez);
+
+            const tx = targetConfig.a * Math.cos(tAngle);
+            const tz = targetConfig.a * Math.sin(tAngle);
+            targetMesh.position.set(tx, 0, tz);
+
+            // Vector from Earth to Target Planet
+            const dx = tx - ex;
+            const dz = tz - ez;
+            const distAU = Math.sqrt(dx * dx + dz * dz) / 13.0; // Scaled to AU
+
+            // Extend Sightline to the distant sky sphere (r = R_SKY)
+            const sightAngle = Math.atan2(dz, dx);
+            const projX = ex + R_SKY * Math.cos(sightAngle);
+            const projZ = ez + R_SKY * Math.sin(sightAngle);
+
+            // Update Sightline Mesh
+            sightlineMesh.geometry.setFromPoints([
+                new THREE.Vector3(ex, 0, ez),
+                new THREE.Vector3(projX, 0, projZ)
+            ]);
+            sightlineMesh.computeLineDistances();
+
+            // Apparent Longitude in Degrees
+            const apparentAngleDeg = ((sightAngle * 180 / Math.PI) + 360.0) % 360.0;
+
+            // Determine if motion is Retrograde (Apparent longitude decreasing)
+            let deltaAng = apparentAngleDeg - prevApparentAngle;
+            if (deltaAng > 180) deltaAng -= 360;
+            if (deltaAng < -180) deltaAng += 360;
+
+            const isRetrograde = deltaAng < 0.0;
+            prevApparentAngle = apparentAngleDeg;
+
+            // Add point to 3D Trace
+            tracePositions.push(new THREE.Vector3(projX, 0.2, projZ));
+            if (tracePositions.length > MAX_TRACE) tracePositions.shift();
+            traceMesh.geometry.setFromPoints(tracePositions);
+
+            // Add point to 2D Plot
+            hist2D.push({ x: apparentAngleDeg, y: Math.sin(tAngle - eAngle) });
+            if (hist2D.length > 200) hist2D.shift();
+            draw2DApparentTrack(apparentAngleDeg, isRetrograde);
+
+            // Geometric Aspect (Elongation / Opposition)
+            const relAng = Math.abs(((tAngle - eAngle) * 180 / Math.PI + 180) % 360 - 180);
+            let aspectText = "Quadrature (~90°)";
+            if (relAng < 15) aspectText = targetConfig.isInferior ? "Inferior Conjunction" : "Superior Conjunction";
+            else if (relAng > 165) aspectText = targetConfig.isInferior ? "N/A (Inferior)" : "Opposition (Closest Approach)";
+
+            // Update Telemetry Panel
+            document.getElementById('txt-motion-state').innerText = isRetrograde ? "Retrograde (Apparent Backward)" : "Prograde (Direct Motion)";
+            document.getElementById('txt-motion-state').style.color = isRetrograde ? "#EF4444" : "#34D399";
+            document.getElementById('txt-apparent-ra').innerText = `Apparent Longitude: ${apparentAngleDeg.toFixed(1)}°`;
+
+            document.getElementById('t-motion-status').innerText = isRetrograde ? "Retrograde ⬅️" : "Direct / Prograde ➡️";
+            document.getElementById('t-motion-status').style.color = isRetrograde ? "#EF4444" : "#34D399";
+            document.getElementById('t-aspect').innerText = aspectText;
+            document.getElementById('t-distance').innerText = `${distAU.toFixed(2)} AU (${(distAU * 149.6).toFixed(1)}M km)`;
+            document.getElementById('t-synodic').innerText = targetConfig.synodic;
+        }
+
+        window.setTargetPlanet = function(key, btn) {
+            currentTargetKey = key;
+            targetConfig = PLANET_DATA[key];
+            document.querySelectorAll('.btn-retro').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            updateTargetOrbitTrack();
+            clearRetroTrace();
+        };
+
+        window.clearRetroTrace = function() {
+            tracePositions.length = 0;
+            hist2D.length = 0;
+            traceMesh.geometry.setFromPoints([]);
+        };
+
+        // UI Listeners
+        document.getElementById('rng-retro-speed').oninput = (e) => {
+            simSpeed = parseFloat(e.target.value);
+            document.getElementById('txt-retro-speed').innerText = `${simSpeed.toFixed(1)} days/sec`;
+        };
+
+        document.getElementById('btn-toggle-retro-motion').onclick = () => {
+            isRunning = !isRunning;
+            document.getElementById('btn-toggle-retro-motion').innerText = isRunning ? '⏸ Pause Motion' : '▶ Resume Motion';
+        };
+
+        document.getElementById('chk-sightlines').onchange = e => sightlineMesh.visible = e.target.checked;
+        document.getElementById('chk-retro-trace').onchange = e => traceMesh.visible = e.target.checked;
+        document.getElementById('chk-zodiac-sphere').onchange = e => skyRing.visible = e.target.checked;
+
+        // Loop
+        let last = performance.now();
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - last) / 1000; last = now;
+
+            if (isRunning) {
+                elapsedDays += dt * simSpeed;
+                updateRetrograde();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        loop(performance.now());
+        updateRetrograde();
+    })();
+</script>
+</body></html>

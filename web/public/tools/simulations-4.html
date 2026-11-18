@@ -1,0 +1,494 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Celestial Sphere</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3;">
+    <div id="zodiac-seasons-canvas" style="width: 100%; height: 100%;"></div>
+
+    <!-- Top-Right Author Badge -->
+    <div style="position: absolute; top: 12px; right: 12px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; padding: 8px 14px; text-align: right; z-index: 100; pointer-events: none;">
+        <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: #FBBF24; font-weight: 700;">Observatory Designer</div>
+        <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+    </div>
+
+    <!-- Top Mode Switcher Bar -->
+    <div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(13, 17, 23, 0.94); padding: 5px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.15); z-index: 100;">
+        <button class="btn-mode" onclick="setZodiacMode(1, this)">1. Three Core Planes</button>
+        <button class="btn-mode active" onclick="setZodiacMode(2, this)">2. 13 Zodiacs & 4 Seasons</button>
+        <button class="btn-mode" onclick="setZodiacMode(3, this)">3. Moon & Eclipses</button>
+    </div>
+
+    <!-- Left Control Panel -->
+    <div style="position: absolute; top: 60px; left: 12px; width: 330px; max-height: calc(100% - 72px); background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 14px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.8);">
+        <h3 style="font-size: 1.05rem; color: #FBBF24; margin-bottom: 2px;">Celestial Sphere</h3>
+        <p style="font-size: 0.68rem; color: #8B949E; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px;">13 Zodiacs, Seasons & Nodal Eclipses</p>
+
+        <button id="btn-toggle-zodiac-spin" style="width: 100%; padding: 6px; background: #238636; border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 6px; font-size: 0.76rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">⏸ Pause Motion</button>
+
+        <div style="margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #C9D1D9;">
+                <span>Sun Position (λ):</span><span id="txt-lambda-val" style="color: #FBBF24; font-weight: 600;">0.0° (Equinox)</span>
+            </div>
+            <input type="range" id="rng-lambda" min="0" max="360" step="0.5" value="0" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+        </div>
+
+        <button id="btn-snap-eclipse" style="width: 100%; padding: 6px; background: #991B1B; border: 1px solid #EF4444; color: #FEE2E2; border-radius: 6px; font-size: 0.74rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">🌕 Snap to Lunar Eclipse</button>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 4px;">Four Cardinal Seasons</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; margin-bottom: 8px;">
+            <button class="btn-season active" onclick="setSeasonDeg(0.0, this)">🌸 Spring (0°)</button>
+            <button class="btn-season" onclick="setSeasonDeg(90.0, this)">☀️ Summer (+23.4°)</button>
+            <button class="btn-season" onclick="setSeasonDeg(180.0, this)">🍂 Autumn (180°)</button>
+            <button class="btn-season" onclick="setSeasonDeg(270.0, this)">❄️ Winter (-23.4°)</button>
+        </div>
+
+        <div style="font-size: 0.68rem; text-transform: uppercase; color: #FBBF24; font-weight: 700; margin-bottom: 4px;">13 IAU Zodiac Constellations</div>
+        <div id="zodiac-grid-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;"></div>
+    </div>
+
+    <!-- Bottom Telemetry HUD -->
+    <div style="position: absolute; bottom: 12px; right: 12px; width: 340px; background: rgba(13, 17, 23, 0.92); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 10px 14px; font-family: monospace; font-size: 0.72rem; pointer-events: none;">
+        <div style="color: #FBBF24; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; margin-bottom: 4px;">CELESTIAL SPHERE TELEMETRY</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Astronomical Season:</span><span id="h-season" style="color:#38BDF8; font-weight:600;">Spring (Vasantha)</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Sun Zodiac Host:</span><span id="h-zodiac" style="color:#FBBF24; font-weight:600;">♓ Pisces</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span style="color:#8B949E;">Solar Declination (δ):</span><span id="h-dec" style="color:#34D399; font-weight:600;">+0.00°</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color:#8B949E;">Ecliptic Longitude (λ):</span><span id="h-ecl-lon" style="color:#FBBF24;">0.0°</span></div>
+    </div>
+
+    <style>
+        .btn-mode { padding: 5px 12px; background: transparent; border: none; color: #94A3B8; border-radius: 18px; font-size: 0.72rem; font-weight: 600; cursor: pointer; }
+        .btn-mode:hover { color: #FFF; }
+        .btn-mode.active { background: #38BDF8; color: #03060B; font-weight: 700; }
+
+        .btn-season { padding: 5px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.68rem; cursor: pointer; text-align: left; }
+        .btn-season:hover { background: #334155; border-color: #38BDF8; color: #38BDF8; }
+        .btn-season.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: bold; }
+
+        .btn-zod { padding: 4px 2px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1); color: #CBD5E1; border-radius: 4px; font-size: 0.66rem; cursor: pointer; text-align: center; }
+        .btn-zod:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-zod.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: bold; }
+        .btn-zod.ophiuchus { border-color: #A855F7; color: #E9D5FF; }
+        .btn-zod.ophiuchus.active { background: #7E22CE; border-color: #C084FC; color: #FFF; }
+    </style>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    (function(){
+        const R_SUN = 8.0;
+        const R_MOON = 4.8;
+        const SHADOW_LENGTH = 8.5;
+        const EPSILON = 23.44 * (Math.PI / 180);
+        const INC_MOON = 5.15 * (Math.PI / 180);
+
+        const ZODIAC_13 = [
+            { name: "Pisces", symbol: "♓", start: 351.6, end: 29.0, color: 0x26C6DA },
+            { name: "Aries", symbol: "♈", start: 29.0, end: 53.5, color: 0xFF5252 },
+            { name: "Taurus", symbol: "♉", start: 53.5, end: 90.2, color: 0xFFA726 },
+            { name: "Gemini", symbol: "♊", start: 90.2, end: 118.0, color: 0xFFEE58 },
+            { name: "Cancer", symbol: "♋", start: 118.0, end: 138.2, color: 0x66BB6A },
+            { name: "Leo", symbol: "♌", start: 138.2, end: 174.1, color: 0xFFCA28 },
+            { name: "Virgo", symbol: "♍", start: 174.1, end: 218.0, color: 0x26A69A },
+            { name: "Libra", symbol: "♎", start: 218.0, end: 241.0, color: 0x42A5F5 },
+            { name: "Scorpius", symbol: "♏", start: 241.0, end: 247.7, color: 0xAB47BC },
+            { name: "Ophiuchus", symbol: "⛎", start: 247.7, end: 266.3, color: 0xC084FC },
+            { name: "Sagittarius", symbol: "♐", start: 266.3, end: 299.7, color: 0xEC407A },
+            { name: "Capricornus", symbol: "♑", start: 299.7, end: 327.9, color: 0x7E57C2 },
+            { name: "Aquarius", symbol: "♒", start: 327.9, end: 351.6, color: 0x29B6F6 }
+        ];
+
+        const ASTERISMS = [
+            [[-5, 3], [-2, 1], [0, 0], [3, -2], [5, 2], [2, 4], [0, 0]],
+            [[-3, 1], [0, 0], [3, -2], [5, -1]],
+            [[-5, 3], [-2, 1], [0, 0], [3, 2], [6, 4], [1, -2], [-2, -2]],
+            [[-4, 4], [-4, 1], [-4, -3], [3, 4], [3, 1], [3, -3], [-4, 4], [3, 4]],
+            [[0, 2], [0, 0], [-2, -2], [0, 0], [3, -2]],
+            [[-4, 3], [-2, 5], [0, 3], [0, 0], [4, -1], [6, 2], [4, -1], [0, -2], [-4, 3]],
+            [[-4, 3], [-1, 1], [0, 0], [4, 2], [6, -2], [0, 0], [-2, -3]],
+            [[-3, 2], [0, 4], [3, 2], [0, -2], [-3, 2]],
+            [[-3, 1], [-1, 2], [0, 0], [2, -2], [3, -4], [1, -5], [0, -4]],
+            [[-3, -1], [-4, 4], [0, 6], [4, 4], [3, -1], [-3, -1], [0, 6], [0, 1]],
+            [[-3, 2], [-1, 4], [3, 2], [2, -2], [-2, -2], [-3, 2], [3, 2], [5, 0], [2, -2]],
+            [[-4, 2], [3, 3], [1, -3], [-4, 2]],
+            [[-4, 2], [-1, 1], [0, 3], [2, 0], [4, -2], [6, -2]]
+        ];
+
+        const container = document.getElementById('zodiac-seasons-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x03060B, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 16, 22);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.AmbientLight(0xFFFFFF, 0.6));
+        const sunPointLight = new THREE.PointLight(0xFFFFFF, 2.5, 100);
+        scene.add(sunPointLight);
+
+        // Starfield Dust
+        const starsGeo = new THREE.BufferGeometry();
+        const starCoords = [];
+        for (let i = 0; i < 900; i++) {
+            const u = Math.random() * Math.PI * 2;
+            const v = Math.acos((Math.random() * 2) - 1);
+            const r = 50 + Math.random() * 10;
+            starCoords.push(r * Math.sin(v) * Math.cos(u), r * Math.sin(v) * Math.sin(u), r * Math.cos(v));
+        }
+        starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+        scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0x94A3B8, size: 0.8 })));
+
+        // Central Earth Globe
+        const earth = new THREE.Mesh(
+            new THREE.SphereGeometry(0.85, 32, 16),
+            new THREE.MeshStandardMaterial({ color: 0x0284C7, roughness: 0.4 })
+        );
+        scene.add(earth);
+
+        function makeLabel(text, color = '#FFFFFF') {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.font = 'bold 34px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, 256, 75);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+            sprite.scale.set(3.4, 0.85, 1);
+            return sprite;
+        }
+
+        function makeCircle(radius, colorHex, dashed = false) {
+            const pts = [];
+            for (let i = 0; i <= 128; i++) {
+                const a = (i / 128) * Math.PI * 2;
+                pts.push(new THREE.Vector3(radius * Math.cos(a), 0, radius * Math.sin(a)));
+            }
+            const geo = new THREE.BufferGeometry().setFromPoints(pts);
+            let mat = dashed
+                ? new THREE.LineDashedMaterial({ color: colorHex, dashSize: 0.4, gapSize: 0.2, linewidth: 2 })
+                : new THREE.LineBasicMaterial({ color: colorHex, linewidth: 2.5 });
+            const line = new THREE.Line(geo, mat);
+            if (dashed) line.computeLineDistances();
+            return line;
+        }
+
+        // --- 1. CORE PLANES ---
+        const groupCore = new THREE.Group();
+
+        // Celestial Equator (in X-Z plane, Y=0)
+        const equator = makeCircle(R_SUN, 0x38BDF8);
+        const eqLabel = makeLabel('Celestial Equator (0°)', '#38BDF8');
+        eqLabel.position.set(0, 0, R_SUN + 0.8);
+        groupCore.add(equator, eqLabel);
+
+        const axisGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, -R_SUN * 1.3, 0), new THREE.Vector3(0, R_SUN * 1.3, 0)]);
+        const spinAxis = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0x38BDF8 }));
+        const ncpLabel = makeLabel('North Pole (NCP)', '#38BDF8');
+        ncpLabel.position.set(0, R_SUN * 1.35, 0);
+        groupCore.add(spinAxis, ncpLabel);
+
+        // Ecliptic Plane (Tilted around X-axis by EPSILON)
+        const groupEcliptic = new THREE.Group();
+        const ecliptic = makeCircle(R_SUN, 0xFBBF24);
+        const eclLabel = makeLabel('Ecliptic (Sun Path: 23.4°)', '#FBBF24');
+        eclLabel.position.set(0, 0, -R_SUN - 0.8);
+        groupEcliptic.add(ecliptic, eclLabel);
+        groupEcliptic.rotation.x = EPSILON;
+        groupCore.add(groupEcliptic);
+        scene.add(groupCore);
+
+        // --- 4 ASTRONOMICAL SEASON POINTS ---
+        const groupSeasons = new THREE.Group();
+        groupSeasons.rotation.x = EPSILON;
+
+        const seasonsConfig = [
+            { name: "🌸 Spring Equinox", deg: 0, color: 0x38BDF8 },
+            { name: "☀️ Summer Solstice", deg: 90, color: 0xFBBF24 },
+            { name: "🍂 Autumn Equinox", deg: 180, color: 0xFB923C },
+            { name: "❄️ Winter Solstice", deg: 270, color: 0x93C5FD }
+        ];
+
+        seasonsConfig.forEach(s => {
+            const rad = s.deg * (Math.PI / 180);
+            const x = R_SUN * Math.cos(rad);
+            const z = R_SUN * Math.sin(rad);
+
+            const sMarker = new THREE.Mesh(
+                new THREE.SphereGeometry(0.18, 12, 12),
+                new THREE.MeshStandardMaterial({ color: s.color, emissive: s.color, emissiveIntensity: 0.9 })
+            );
+            sMarker.position.set(x, 0, z);
+            groupSeasons.add(sMarker);
+
+            const sLabel = makeLabel(s.name, '#' + s.color.toString(16).padStart(6, '0'));
+            sLabel.position.set(x * 1.15, 0.5, z * 1.15);
+            groupSeasons.add(sLabel);
+        });
+        scene.add(groupSeasons);
+
+        // --- 2. 13 ZODIAC CONSTELLATIONS GROUP ---
+        const groupZodiac13 = new THREE.Group();
+        groupZodiac13.rotation.x = EPSILON;
+
+        ZODIAC_13.forEach((zod, idx) => {
+            let spanLen = zod.end > zod.start ? zod.end - zod.start : (360 - zod.start + zod.end);
+            let midDeg = (zod.start + spanLen / 2) % 360;
+            let midRad = midDeg * (Math.PI / 180);
+
+            const zLabel = makeLabel(`${zod.symbol} ${zod.name}`, zod.name === 'Ophiuchus' ? '#D8B4FE' : '#FDE68A');
+            zLabel.position.set((R_SUN + 1.3) * Math.cos(midRad), 0, (R_SUN + 1.3) * Math.sin(midRad));
+            groupZodiac13.add(zLabel);
+
+            const bRad = zod.start * (Math.PI / 180);
+            const tickGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3((R_SUN - 0.5) * Math.cos(bRad), 0, (R_SUN - 0.5) * Math.sin(bRad)),
+                new THREE.Vector3((R_SUN + 0.5) * Math.cos(bRad), 0, (R_SUN + 0.5) * Math.sin(bRad))
+            ]);
+            groupZodiac13.add(new THREE.Line(tickGeo, new THREE.LineBasicMaterial({ color: zod.name === 'Ophiuchus' ? 0xC084FC : 0xF59E0B })));
+
+            const astNodes = ASTERISMS[idx];
+            const pts = [];
+            astNodes.forEach(node => {
+                const lonR = (midDeg + node[0]) * (Math.PI / 180);
+                const latR = (node[1]) * (Math.PI / 180);
+                const x = R_SUN * Math.cos(latR) * Math.cos(lonR);
+                const z = R_SUN * Math.cos(latR) * Math.sin(lonR);
+                const y = R_SUN * Math.sin(latR);
+                pts.push(new THREE.Vector3(x, y, z));
+
+                const starMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1, 8, 8),
+                    new THREE.MeshStandardMaterial({ color: zod.color, emissive: zod.color, emissiveIntensity: 0.8 })
+                );
+                starMesh.position.set(x, y, z);
+                groupZodiac13.add(starMesh);
+            });
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            groupZodiac13.add(new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: zod.color, transparent: true, opacity: 0.7 })));
+        });
+        scene.add(groupZodiac13);
+
+        // --- 3. MOON & UMBRAL SHADOW ---
+        const groupMoon = new THREE.Group();
+
+        const moonOrbitGroup = new THREE.Group();
+        moonOrbitGroup.rotation.x = EPSILON + INC_MOON;
+        const moonRing = makeCircle(R_MOON, 0xE2E8F0, true);
+        moonOrbitGroup.add(moonRing);
+        groupMoon.add(moonOrbitGroup);
+
+        const rahuLabel = makeLabel('☊ Rahu (Node)', '#EF4444');
+        rahuLabel.position.set(R_SUN + 0.6, 0, 0);
+        const ketuLabel = makeLabel('☋ Ketu (Node)', '#10B981');
+        ketuLabel.position.set(-R_SUN - 0.6, 0, 0);
+        groupMoon.add(rahuLabel, ketuLabel);
+
+        const coneGeo = new THREE.ConeGeometry(0.85, SHADOW_LENGTH, 32, 1, true);
+        coneGeo.rotateX(-Math.PI / 2);
+        coneGeo.translate(0, 0, SHADOW_LENGTH / 2);
+
+        const shadowCone = new THREE.Mesh(coneGeo, new THREE.MeshBasicMaterial({
+            color: 0x818CF8, transparent: true, opacity: 0.40, side: THREE.DoubleSide
+        }));
+
+        const axisLineGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, SHADOW_LENGTH * 1.1)
+        ]);
+        const shadowAxisLine = new THREE.Line(axisLineGeo, new THREE.LineDashedMaterial({ color: 0xA5B4FC, dashSize: 0.3, gapSize: 0.2 }));
+        shadowAxisLine.computeLineDistances();
+        shadowCone.add(shadowAxisLine);
+
+        const shadowLabel = makeLabel("Earth's Umbra", '#A5B4FC');
+        shadowLabel.position.set(0, 0.8, R_MOON);
+        shadowCone.add(shadowLabel);
+
+        groupMoon.add(shadowCone);
+
+        const moonMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.32, 20, 20),
+            new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.6 })
+        );
+        groupMoon.add(moonMesh);
+        scene.add(groupMoon);
+        groupMoon.visible = false;
+
+        // --- SUN OBJECT ---
+        const sunMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.55, 24, 24),
+            new THREE.MeshBasicMaterial({ color: 0xFBBF24 })
+        );
+        const corona = new THREE.Mesh(
+            new THREE.SphereGeometry(0.85, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.35 })
+        );
+        sunMesh.add(corona);
+        scene.add(sunMesh);
+
+        // Build 13 Zodiac Grid Buttons in Sidebar
+        const zGrid = document.getElementById('zodiac-grid-container');
+        ZODIAC_13.forEach((z, i) => {
+            const btn = document.createElement('button');
+            btn.className = `btn-zod ${z.name === 'Ophiuchus' ? 'ophiuchus' : ''}`;
+            btn.id = `zbtn-${i}`;
+            btn.innerText = `${z.symbol} ${z.name.slice(0, 4)}`;
+            btn.onclick = () => {
+                timeAngle = z.start + 1.0;
+                document.getElementById('rng-lambda').value = timeAngle;
+                updatePositions();
+            };
+            zGrid.appendChild(btn);
+        });
+
+        // State variables
+        let currentMode = 2;
+        let isPlaying = true;
+        let timeAngle = 0.0;
+
+        window.setZodiacMode = function(modeNum, btn) {
+            currentMode = modeNum;
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            groupCore.visible = true;
+            groupSeasons.visible = (modeNum === 1 || modeNum === 2);
+            groupZodiac13.visible = (modeNum === 2);
+            groupMoon.visible = (modeNum === 3);
+
+            if (modeNum === 1) camera.position.set(0, 14, 22);
+            if (modeNum === 2) camera.position.set(0, 18, 16);
+            if (modeNum === 3) camera.position.set(0, 10, 22);
+        };
+
+        window.setSeasonDeg = function(degVal, btn) {
+            timeAngle = degVal;
+            document.querySelectorAll('.btn-season').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            document.getElementById('rng-lambda').value = timeAngle;
+            updatePositions();
+        };
+
+        function getActiveConstellation(deg) {
+            for (let i = 0; i < ZODIAC_13.length; i++) {
+                const z = ZODIAC_13[i];
+                if (z.end > z.start) {
+                    if (deg >= z.start && deg < z.end) return { zod: z, idx: i };
+                } else {
+                    if (deg >= z.start || deg < z.end) return { zod: z, idx: i };
+                }
+            }
+            return { zod: ZODIAC_13[0], idx: 0 };
+        }
+
+        function getSeasonInfo(deg) {
+            if (deg >= 0 && deg < 90) return "🌸 Spring (Vasantha)";
+            if (deg >= 90 && deg < 180) return "☀️ Summer (Grishma)";
+            if (deg >= 180 && deg < 270) return "🍂 Autumn (Sharad)";
+            return "❄️ Winter (Shishira)";
+        }
+
+        function updatePositions(forceEclipse = false) {
+            const rad = timeAngle * (Math.PI / 180);
+
+            // Sun Coordinates on the True Ecliptic Plane
+            const sx = R_SUN * Math.cos(rad);
+            const sy = -R_SUN * Math.sin(rad) * Math.sin(EPSILON);
+            const sz = R_SUN * Math.sin(rad) * Math.cos(EPSILON);
+
+            sunMesh.position.set(sx, sy, sz);
+            sunPointLight.position.set(sx, sy, sz);
+
+            // Solar Declination: sin(delta) = -sin(eps) * sin(lambda)
+            const decDeg = Math.asin(-Math.sin(EPSILON) * Math.sin(rad)) * (180 / Math.PI);
+
+            // Earth Umbra (Points directly opposite to Sun)
+            shadowCone.lookAt(-sx, -sy, -sz);
+
+            // Moon Position (Inclined by 5.15° relative to Ecliptic)
+            let moonAngleRad = ((timeAngle * 13.2) % 360) * (Math.PI / 180);
+            if (forceEclipse) moonAngleRad = Math.PI;
+
+            const mx_orb = R_MOON * Math.cos(moonAngleRad);
+            const mz_orb = R_MOON * Math.sin(moonAngleRad);
+            const totalTilt = EPSILON + INC_MOON;
+
+            const mx = mx_orb;
+            const my = -mz_orb * Math.sin(totalTilt);
+            const mz = mz_orb * Math.cos(totalTilt);
+            moonMesh.position.set(mx, my, mz);
+
+            // Lookups
+            const active = getActiveConstellation(timeAngle);
+            const seasonName = getSeasonInfo(timeAngle);
+
+            ZODIAC_13.forEach((_, idx) => {
+                const b = document.getElementById(`zbtn-${idx}`);
+                if (b) b.classList.toggle('active', idx === active.idx);
+            });
+
+            document.getElementById('txt-lambda-val').innerText = `${timeAngle.toFixed(1)}° (${active.zod.name})`;
+            document.getElementById('h-season').innerText = seasonName;
+            document.getElementById('h-zodiac').innerText = `${active.zod.symbol} ${active.zod.name}${active.zod.name === 'Ophiuchus' ? ' (13th)' : ''}`;
+            document.getElementById('h-zodiac').style.color = active.zod.name === 'Ophiuchus' ? "#C084FC" : "#FBBF24";
+            document.getElementById('h-dec').innerText = `${decDeg >= 0 ? '+' : ''}${decDeg.toFixed(2)}°`;
+            document.getElementById('h-ecl-lon').innerText = `${timeAngle.toFixed(1)}°`;
+        }
+
+        // UI Event Listeners
+        document.getElementById('rng-lambda').oninput = (e) => {
+            timeAngle = parseFloat(e.target.value);
+            updatePositions();
+        };
+
+        document.getElementById('btn-toggle-zodiac-spin').onclick = () => {
+            isPlaying = !isPlaying;
+            document.getElementById('btn-toggle-zodiac-spin').innerText = isPlaying ? '⏸ Pause Motion' : '▶ Resume Motion';
+        };
+
+        document.getElementById('btn-snap-eclipse').onclick = () => {
+            setZodiacMode(3, document.querySelectorAll('.btn-mode')[2]);
+            isPlaying = false;
+            document.getElementById('btn-toggle-zodiac-spin').innerText = '▶ Resume Motion';
+            timeAngle = 0.0;
+            document.getElementById('rng-lambda').value = 0.0;
+            updatePositions(true);
+        };
+
+        // Continuous Animation Loop
+        let lastTime = performance.now();
+
+        function loop(now) {
+            requestAnimationFrame(loop);
+            const dt = (now - lastTime) / 1000.0;
+            lastTime = now;
+
+            if (isPlaying) {
+                timeAngle = (timeAngle + dt * 10.0) % 360.0;
+                document.getElementById('rng-lambda').value = timeAngle;
+                updatePositions();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.onresize = () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+
+        loop(performance.now());
+        updatePositions();
+    })();
+</script>
+</body></html>

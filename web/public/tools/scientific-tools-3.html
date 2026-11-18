@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eclipsing Binary Period & Complete ToMs Analyser</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        h1 {
+            color: #38bdf8;
+            text-align: center;
+            margin-top: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 160px;
+            background: #020617;
+            border: 1px solid #334155;
+            color: #38bdf8;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .controls {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 13px;
+        }
+        button:hover { opacity: 0.9; }
+        .period-controls {
+            margin-top: 12px;
+            background: rgba(30, 41, 59, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .period-edit-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .period-edit-row input {
+            flex: 1;
+            background: #020617;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .jump-btn {
+            background: #334155;
+            padding: 5px 10px;
+            font-size: 11px;
+            border: 1px solid #475569;
+        }
+        .jump-btn:hover { background: #0ea5e9; }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .btn-group button {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+        }
+        .btn-group button.active {
+            background: #0ea5e9;
+            border-color: #38bdf8;
+            color: white;
+        }
+        .results-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 5px;
+        }
+        .results-box h3 {
+            margin: 0 0 6px 0;
+            color: #38bdf8;
+            font-size: 14px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+            font-size: 12px;
+        }
+        canvas {
+            width: 100%;
+            height: 250px;
+            background: #020617;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-sizing: border-box;
+        }
+        .toms-container {
+            margin-top: 20px;
+            background: rgba(2, 6, 23, 0.8);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .toms-container h3 {
+            margin: 0 0 10px 0;
+            color: #38bdf8;
+            font-size: 15px;
+            position: sticky;
+            top: 0;
+            background: #020617;
+            padding: 4px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        th, td {
+            padding: 6px 10px;
+            text-align: left;
+            border-bottom: 1px solid #1e293b;
+        }
+        th { color: #38bdf8; }
+        .note {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔭 Eclipsing Binary Period & Complete ToMs Analyser</h1>
+    
+    <div class="grid">
+        <div>
+            <label for="data-input">Paste Data (HJD | MAG or FLUX):</label>
+            <textarea id="data-input" placeholder="HJD  MAG/FLUX"></textarea>
+            <div class="note">Format: Two columns separated by space, tab, or comma.</div>
+            <div class="controls">
+                <button onclick="loadSampleData()">Load Sample Data</button>
+                <button onclick="analyzeData()" style="background: linear-gradient(135deg, #22c55e, #10b981);">Run Analysis 🚀</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="results-box">
+                <h3>📊 Analyser Output</h3>
+                <div class="results-grid" id="output-stats">
+                    <div>Status: <span style="color:#f59e0b;">Waiting for data...</span></div>
+                </div>
+            </div>
+
+            <div class="period-controls">
+                <label>Period (P):</label>
+                <div class="period-edit-row">
+                    <input type="number" id="period-input" step="0.00001" oninput="onManualUpdate()" placeholder="Period">
+                </div>
+                
+                <label>Epoch Zero (T₀) / Jump Data Points:</label>
+                <div class="period-edit-row">
+                    <button class="jump-btn" onclick="jumpT0(-1)">◀ Prev</button>
+                    <input type="number" id="t0-input" step="0.00001" oninput="onManualUpdate()" placeholder="T0">
+                    <button class="jump-btn" onclick="jumpT0(1)">Next ▶</button>
+                </div>
+
+                <label>Phase Fine-Tune Offset (Δφ):</label>
+                <div class="period-edit-row">
+                    <input type="number" id="phase-offset-input" value="0.000" step="0.001" oninput="onManualUpdate()" placeholder="0.000">
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-half" onclick="setMultiplier(0.5)">½ P</button>
+                    <button id="btn-one" class="active" onclick="setMultiplier(1.0)">1P</button>
+                    <button id="btn-double" onclick="setMultiplier(2.0)">2P</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <canvas id="plotCanvas" width="800" height="250"></canvas>
+    </div>
+
+    <div class="toms-container">
+        <h3>📋 List of All Primary & Secondary Times of Minima (ToMs)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Cycle (Epoch E)</th>
+                    <th>Calculated Time of Minimum (HJD)</th>
+                </tr>
+            </thead>
+            <tbody id="toms-table-body">
+                <tr><td colspan="3" style="color:#64748b;">Run analysis to compute ephemeris list...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let rawData = { hjd: [], val: [] };
+    let baseComputedPeriod = 1.0;
+
+    function loadSampleData() {
+        let sample = "";
+        let P_true = 0.49752; 
+        let T0 = 2460610.32;
+        for (let i = 0; i < 400; i++) {
+            let hjd = 2460610.3 + i * 0.015 + (Math.random() - 0.5) * 0.002;
+            let phase = ((hjd - T0) / P_true) % 1;
+            if (phase < 0) phase += 1;
+            
+            let mag = 13.8 + (Math.random() - 0.5) * 0.02;
+            if (phase > 0.94 || phase < 0.06) mag += 0.4 * Math.exp(-Math.pow(phase > 0.5 ? phase - 1 : phase, 2) / (2 * 0.03 * 0.03));
+            if (phase > 0.44 || phase < 0.56) {
+                let p2 = Math.abs(phase - 0.5);
+                mag += 0.3 * Math.exp(-Math.pow(p2, 2) / (2 * 0.03 * 0.03));
+            }
+
+            sample += `${hjd.toFixed(5)}\t${mag.toFixed(4)}\n`;
+        }
+        document.getElementById("data-input").value = sample;
+    }
+
+    window.onload = loadSampleData;
+
+    function parseData() {
+        let text = document.getElementById("data-input").value.trim();
+        let lines = text.split("\n");
+        let hjd = [], val = [];
+        
+        for (let line of lines) {
+            let parts = line.trim().split(/[\s,\t]+/);
+            if (parts.length >= 2) {
+                let t = parseFloat(parts[0]);
+                let y = parseFloat(parts[1]);
+                if (!isNaN(t) && !isNaN(y)) {
+                    hjd.push(t);
+                    val.push(y);
+                }
+            }
+        }
+        return { hjd, val };
+    }
+
+    function analyzeData() {
+        rawData = parseData();
+        if (rawData.hjd.length < 10) {
+            alert("Please provide at least 10 valid data points.");
+            return;
+        }
+
+        let t = rawData.hjd;
+        let y = rawData.val;
+
+        let timeSpan = t[t.length - 1] - t[0];
+        let bestPeriod = 0.2;
+        let minVariance = Infinity;
+        
+        // Constrain period search bounds to avoid sub-harmonic multi-cycle aliasing
+        let pMin = 0.2, pMax = Math.min(timeSpan / 3.0, 5.0), steps = 3000;
+        let dp = (pMax - pMin) / steps;
+
+        for (let i = 0; i < steps; i++) {
+            let p = pMin + i * dp;
+            let bins = new Array(50).fill(0).map(() => []);
+            for (let k = 0; k < t.length; k++) {
+                let phase = ((t[k] - t[0]) / p) % 1;
+                if (phase < 0) phase += 1;
+                bins[Math.floor(phase * 50)].push(y[k]);
+            }
+            let totalVariance = 0, validBins = 0;
+            for (let b of bins) {
+                if (b.length > 1) {
+                    let mean = b.reduce((a, c) => a + c, 0) / b.length;
+                    totalVariance += b.reduce((a, c) => a + Math.pow(c - mean, 2), 0) / b.length;
+                    validBins++;
+                }
+            }
+            if (validBins > 20 && totalVariance < minVariance) {
+                minVariance = totalVariance;
+                bestPeriod = p;
+            }
+        }
+
+        baseComputedPeriod = bestPeriod;
+        document.getElementById("period-input").value = bestPeriod.toFixed(5);
+        document.getElementById("phase-offset-input").value = "0.000";
+        updateActiveButton(1.0);
+
+        let maxVal = Math.max(...y);
+        let deepestIdx = y.indexOf(maxVal);
+        let initialT0 = t[deepestIdx];
+
+        document.getElementById("t0-input").value = initialT0.toFixed(5);
+        renderPlotAndStats();
+    }
+
+    function jumpT0(direction) {
+        if (rawData.hjd.length === 0) return;
+        let currentT0 = parseFloat(document.getElementById("t0-input").value);
+        if (isNaN(currentT0)) currentT0 = rawData.hjd[0];
+
+        let closestIdx = 0;
+        let minDiff = Infinity;
+        for (let i = 0; i < rawData.hjd.length; i++) {
+            let diff = Math.abs(rawData.hjd[i] - currentT0);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIdx = i;
+            }
+        }
+
+        let newIdx = closestIdx + direction;
+        if (newIdx < 0) newIdx = 0;
+        if (newIdx >= rawData.hjd.length) newIdx = rawData.hjd.length - 1;
+
+        document.getElementById("t0-input").value = rawData.hjd[newIdx].toFixed(5);
+        renderPlotAndStats();
+    }
+
+    function setMultiplier(mult) {
+        let currentP = baseComputedPeriod * mult;
+        document.getElementById("period-input").value = currentP.toFixed(5);
+        updateActiveButton(mult);
+        renderPlotAndStats();
+    }
+
+    function onManualUpdate() {
+        renderPlotAndStats();
+    }
+
+    function updateActiveButton(mult) {
+        document.getElementById("btn-half").className = mult === 0.5 ? "active" : "";
+        document.getElementById("btn-one").className = mult === 1.0 ? "active" : "";
+        document.getElementById("btn-double").className = mult === 2.0 ? "active" : "";
+    }
+
+    function findLocalMinimumTime(t, y, estimatedCenterTime, period) {
+        let windowHalf = period * 0.08;
+        let subset = [];
+        
+        for (let i = 0; i < t.length; i++) {
+            if (Math.abs(t[i] - estimatedCenterTime) < windowHalf) {
+                subset.push({ x: t[i], y: y[i] });
+            }
+        }
+
+        if (subset.length < 4) return estimatedCenterTime;
+
+        let peak = subset.reduce((max, cur) => cur.y > max.y ? cur : max, subset[0]);
+        let x0 = peak.x;
+
+        let sumX = 0, sumY = 0, sumX2 = 0, sumX3 = 0, sumX4 = 0, sumXY = 0, sumX2Y = 0, n = subset.length;
+        for (let pt of subset) {
+            let dx = pt.x - x0;
+            let dy = pt.y;
+            sumX += dx; sumY += dy; sumX2 += dx*dx; sumX3 += dx*dx*dx; sumX4 += dx*dx*dx*dx;
+            sumXY += dx*dy; sumX2Y += dx*dx*dy;
+        }
+
+        let det = n * (sumX2*sumX4 - sumX3*sumX3) - sumX * (sumX*sumX4 - sumX2*sumX3) + sumX2 * (sumX*sumX3 - sumX2*sumX2);
+        if (Math.abs(det) < 1e-9) return x0;
+
+        let c = ((sumY * (sumX2*sumX4 - sumX3*sumX3)) - (sumX * (sumXY*sumX4 - sumX3*sumX2Y)) + (sumX2 * (sumXY*sumX3 - sumX2*sumX2Y))) / det;
+        let b = ((n * (sumXY*sumX4 - sumX3*sumX2Y)) - (sumY * (sumX*sumX4 - sumX2*sumX3)) + (sumX2 * (sumX*sumX2Y - sumXY*sumX2))) / det;
+        let a = ((n * (sumX2*sumX2Y - sumX3*sumXY)) - (sumX * (sumX*sumX2Y - sumX2*sumXY)) + (sumY * (sumX*sumX3 - sumX2*sumX2))) / det;
+
+        if (a >= 0) return x0;
+        return x0 - (b / (2 * a));
+    }
+
+    function renderPlotAndStats() {
+        if (rawData.hjd.length === 0) return;
+
+        let t = rawData.hjd;
+        let y = rawData.val;
+        
+        let activePeriod = parseFloat(document.getElementById("period-input").value);
+        let activeT0 = parseFloat(document.getElementById("t0-input").value);
+        let phaseOffset = parseFloat(document.getElementById("phase-offset-input").value) || 0;
+
+        if (isNaN(activePeriod) || isNaN(activeT0) || activePeriod <= 0) return;
+
+        let tMin = t[0], tMax = t[t.length - 1];
+        let shiftedT0 = activeT0 - (phaseOffset * activePeriod);
+
+        let phases = t.map(val => {
+            let p = ((val - shiftedT0) / activePeriod) % 1;
+            return p < 0 ? p + 1 : p;
+        });
+
+        let folded = t.map((val, idx) => ({
+            phase: phases[idx],
+            hjd: val,
+            mag: y[idx]
+        })).sort((a, b) => a.phase - b.phase);
+
+        document.getElementById("output-stats").innerHTML = `
+            <div>Status: <span style="color:#22c55e;">Live Analysing ✔</span></div>
+            <div>Period: <strong>${activePeriod.toFixed(5)} d</strong> | Shifted T₀: <strong>${shiftedT0.toFixed(5)}</strong></div>
+        `;
+
+        let startEpoch = Math.floor((tMin - shiftedT0) / activePeriod);
+        let endEpoch = Math.ceil((tMax - shiftedT0) / activePeriod);
+
+        let tomsHtml = "";
+        let tableRowsCount = 0;
+
+        for (let E = startEpoch; E <= endEpoch; E++) {
+            let nominalPrimary = shiftedT0 + E * activePeriod;
+            let nominalSecondary = shiftedT0 + (E + 0.5) * activePeriod;
+
+            let refinedPrimary = findLocalMinimumTime(t, y, nominalPrimary, activePeriod);
+            let refinedSecondary = findLocalMinimumTime(t, y, nominalSecondary, activePeriod);
+
+            if (nominalPrimary >= tMin - activePeriod && nominalPrimary <= tMax + activePeriod) {
+                tomsHtml += `<tr>
+                    <td style="color:#38bdf8; font-weight:bold;">Primary (HJD₁)</td>
+                    <td>E = ${E}</td>
+                    <td>${refinedPrimary.toFixed(5)}</td>
+                </tr>`;
+                tableRowsCount++;
+            }
+
+            if (nominalSecondary >= tMin - activePeriod && nominalSecondary <= tMax + activePeriod) {
+                tomsHtml += `<tr>
+                    <td style="color:#f43f5e; font-weight:bold;">Secondary (HJD₂)</td>
+                    <td>E = ${E} + 0.5</td>
+                    <td>${refinedSecondary.toFixed(5)}</td>
+                </tr>`;
+                tableRowsCount++;
+            }
+        }
+
+        document.getElementById("toms-table-body").innerHTML = tomsHtml;
+        drawCanvas(folded);
+    }
+
+    function drawCanvas(foldedData) {
+        const canvas = document.getElementById("plotCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let w = canvas.width, h = canvas.height;
+        let minMag = Math.min(...foldedData.map(d => d.mag));
+        let maxMag = Math.max(...foldedData.map(d => d.mag));
+        let magRange = (maxMag - minMag) || 1;
+
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+            let x = (w / 4) * i;
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        }
+
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w, 0); ctx.lineTo(w, h); ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = "#38bdf8";
+        foldedData.forEach(pt => {
+            let x = pt.phase * (w / 2); 
+            let y = h - ((pt.mag - minMag) / magRange) * (h - 40) - 20;
+
+            ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            let x2 = (pt.phase + 1) * (w / 2);
+            ctx.beginPath(); ctx.arc(x2, y, 2.5, 0, Math.PI * 2); ctx.fill();
+        });
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px sans-serif";
+        ctx.fillText("Phase 0.0", 5, h - 5);
+        ctx.fillText("Phase 1.0", w / 2 - 25, h - 5);
+        ctx.fillText("Phase 2.0", w - 50, h - 5);
+    }
+</script>
+
+</body>
+</html>

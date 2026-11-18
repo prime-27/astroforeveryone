@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>🔭 Starlight Spectroscope: Spectral Class Detective</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 900px; margin: 0 auto; background: #070B14; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 14px; padding: 20px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 12px 40px rgba(0,0,0,0.85); box-sizing: border-box;">
+    
+    <!-- Game Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 style="font-size: 1.25rem; color: #FBBF24; margin: 0; font-weight: 700;">🔭 Starlight Spectroscope: Spectral Class Detective</h2>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 3px 0 0 0;">Match incoming stellar spectra to the correct Harvard spectral classification (O, B, A, F, G, K, M) before stars drift away!</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 12px; text-align: center;">
+                <div style="font-size: 0.60rem; text-transform: uppercase; color: #34D399; font-weight: 700;">Discovered</div>
+                <div id="spec-score" style="font-size: 1.05rem; color: #FFFFFF; font-weight: 700; font-family: monospace;">0 Stars</div>
+            </div>
+            <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 8px; padding: 6px 12px; text-align: center;">
+                <div style="font-size: 0.60rem; text-transform: uppercase; color: #F87171; font-weight: 700;">Stability</div>
+                <div id="spec-lives" style="font-size: 1.05rem; color: #F87171; font-weight: 700; font-family: monospace;">❤️❤️❤️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Canvas & Interaction Area -->
+    <div style="position: relative; width: 100%; height: 420px; background: #02040A; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; box-sizing: border-box;">
+        
+        <!-- Overlay Start Screen -->
+        <div id="spec-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 7, 18, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; text-align: center; padding: 20px; box-sizing: border-box;">
+            <h3 style="font-size: 1.6rem; color: #FBBF24; margin: 0 0 8px 0;">Stellar Spectrology Laboratory</h3>
+            <p style="font-size: 0.8rem; color: #94A3B8; max-width: 440px; margin: 0 0 18px 0; line-height: 1.4;">
+                Analyze incoming star light spectra and surface temperatures. Match each target star to its correct Spectral Class (O, B, A, F, G, K, M) using your spectroscope console!
+            </p>
+            <button onclick="startSpectroGame()" style="background: #0284C7; border: 1px solid #38BDF8; color: white; padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(2,132,199,0.5);">🔬 Power On Spectroscope</button>
+        </div>
+
+        <!-- Target Star Display Panel -->
+        <div style="background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; text-align: center; z-index: 10;">
+            <span id="star-name-display" style="font-size: 0.7rem; text-transform: uppercase; color: #38BDF8; font-weight: 700; display: block;">Target Star: Sirius (A1V)</span>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 6px;">
+                <div id="star-preview-orb" style="width: 36px; height: 36px; background: #A5F3FC; border-radius: 50%; box-shadow: 0 0 15px #A5F3FC;"></div>
+                <div style="text-align: left;">
+                    <div style="font-size: 0.74rem; color: #C9D1D9;">Surface Temp: <strong id="star-temp-val" style="color: #FBBF24;">9,940 K</strong></div>
+                    <div style="font-size: 0.74rem; color: #C9D1D9;">Absorption Lines: <strong id="spec-lines-hint" style="color: #34D399;">Hydrogen Balmer Strong</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulated Spectroscopic Band Graphic -->
+        <div style="background: #000; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; height: 60px; padding: 8px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 10;">
+            <div style="font-size: 0.58rem; text-transform: uppercase; color: #8B949E; margin-bottom: 4px;">Simulated Optical Spectrum (380nm - 750nm)</div>
+            <div id="spectrum-barcode" style="width: 100%; height: 26px; background: linear-gradient(90deg, #3B82F6, #38BDF8, #FFFFFF, #FEF08A, #F87171); border-radius: 4px; position: relative; overflow: hidden;">
+                <!-- Absorption Lines overlay -->
+                <div style="position: absolute; left: 25%; width: 3px; height: 100%; background: #000; opacity: 0.8;"></div>
+                <div style="position: absolute; left: 48%; width: 4px; height: 100%; background: #000; opacity: 0.85;"></div>
+                <div style="position: absolute; left: 72%; width: 3px; height: 100%; background: #000; opacity: 0.8;"></div>
+            </div>
+        </div>
+
+        <!-- Spectral Class Answer Buttons -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; z-index: 10;" id="spectral-buttons">
+            <button onclick="checkSpectralGuess('O')" style="background: #1E293B; border: 1px solid #334155; color: #93C5FD; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">O Class (>30k K)</button>
+            <button onclick="checkSpectralGuess('B')" style="background: #1E293B; border: 1px solid #334155; color: #93C5FD; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">B Class (10k-30k)</button>
+            <button onclick="checkSpectralGuess('A')" style="background: #1E293B; border: 1px solid #334155; color: #A5F3FC; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">A Class (7.5k-10k)</button>
+            <button onclick="checkSpectralGuess('F')" style="background: #1E293B; border: 1px solid #334155; color: #FEF08A; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">F Class (6k-7.5k)</button>
+            <button onclick="checkSpectralGuess('G')" style="background: #1E293B; border: 1px solid #334155; color: #FBBF24; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">G Class (Sun-like)</button>
+            <button onclick="checkSpectralGuess('K')" style="background: #1E293B; border: 1px solid #334155; color: #FB923C; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">K Class (3.7k-5.2k)</button>
+            <button onclick="checkSpectralGuess('M')" style="background: #1E293B; border: 1px solid #334155; color: #EF4444; padding: 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;" style="grid-column: span 2;">M Red Dwarf (<3.7k)</button>
+        </div>
+
+    </div>
+
+    <!-- Designer Credit Footer -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 0.70rem; color: #8B949E; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+        <span>Astrophysics Game: Harvard Spectral Classification</span>
+        <span style="color: #FBBF24; font-weight: 600;">Designed by Ravi Raja Pothineni</span>
+    </div>
+
+    <!-- Game Script Engine -->
+    <script>
+        const stellarDatabase = [
+            { name: "Sirius", type: "A", temp: "9,940 K", color: "#A5F3FC", hint: "Prominent Hydrogen Balmer absorption lines" },
+            { name: "The Sun", type: "G", temp: "5,778 K", color: "#FBBF24", hint: "Ionized metals and solar Fraunhofer lines" },
+            { name: "Betelgeuse", type: "M", temp: "3,500 K", color: "#EF4444", hint: "Molecular titanium oxide (TiO) bands" },
+            { name: "Vega", type: "A", temp: "9,602 K", color: "#E0F2FE", hint: "Strong deep Hydrogen absorption lines" },
+            { name: "Rigel", type: "B", temp: "12,100 K", color: "#BAE6FD", hint: "Neutral Helium lines present" },
+            { name: "Proxima Centauri", type: "M", temp: "3,042 K", color: "#F87171", hint: "Cool red dwarf molecular bands" },
+            { name: "Arcturus", type: "K", temp: "4,286 K", color: "#FDBA74", hint: "Strong metallic neutral lines (Fe, Ca)" },
+            { name: "Canopus", type: "F", temp: "7,400 K", color: "#FEF08A", hint: "Calcium H & K lines starting to dominate" }
+        ];
+
+        let currentStar = null;
+        let discoveredCount = 0;
+        let stabilityLives = 3;
+
+        function startSpectroGame() {
+            discoveredCount = 0;
+            stabilityLives = 3;
+            document.getElementById('spec-score').innerText = discoveredCount + " Stars";
+            document.getElementById('spec-lives').innerText = "❤️❤️❤️";
+            document.getElementById('spec-overlay').style.display = 'none';
+            loadNextStar();
+        }
+
+        function loadNextStar() {
+            currentStar = stellarDatabase[Math.floor(Math.random() * stellarDatabase.length)];
+            document.getElementById('star-name-display').innerText = `Target Star: ${currentStar.name}`;
+            document.getElementById('star-temp-val').innerText = currentStar.temp;
+            document.getElementById('spec-lines-hint').innerText = currentStar.hint;
+            document.getElementById('star-preview-orb').style.background = currentStar.color;
+            document.getElementById('star-preview-orb').style.boxShadow = `0 0 15px ${currentStar.color}`;
+        }
+
+        function checkSpectralGuess(guessClass) {
+            if (!currentStar) return;
+
+            if (guessClass === currentStar.type) {
+                discoveredCount++;
+                document.getElementById('spec-score').innerText = discoveredCount + " Stars";
+                loadNextStar();
+            } else {
+                stabilityLives--;
+                let hearts = "";
+                for(let i=0; i<stabilityLives; i++) hearts += "❤️";
+                document.getElementById('spec-lives').innerText = hearts;
+
+                if (stabilityLives <= 0) {
+                    document.getElementById('spec-overlay').style.display = 'flex';
+                    document.querySelector('#spec-overlay h3').innerText = "⚠️ Spectroscope Overload!";
+                    document.querySelector('#spec-overlay p').innerText = `Instrument destabilized. You successfully classified ${discoveredCount} stellar spectra. Try again!`;
+                }
+            }
+        }
+    </script>
+</div>
+</body></html>

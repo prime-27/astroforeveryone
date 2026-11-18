@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{title}} · ASTRO – Astronomy for Everyone</title>
+<meta name="description" content="The Astronomical Society for Training, Research and Outreach (ASTRO), Hyderabad – astronomy training, outreach, research and interactive tools by professional astronomers.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="logo.webp" type="image/webp">
+<meta name="theme-color" content="#091d3d">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html"><img src="logo.webp" alt="ASTRO – The Astronomical Society for Training, Research and Outreach" width="52" height="52"><span>Astronomy for Everyone</span></a>
+  <nav aria-label="Main">{{nav}}</nav>
+</header>
+<main>
+{{heading}}
+{{body}}
+</main>
+<footer>
+  <img src="logo.webp" alt="" width="72" height="72">
+  <div>
+    <strong>The Astronomical Society for Training, Research and Outreach (ASTRO)</strong><br>
+    Hyderabad, Telangana, India · Registered under UDYAM MSME: UDYAM-TS-20-0209280
+  </div>
+  <div>
+    <a href="mailto:explore@astroforeveryone.com">explore@astroforeveryone.com</a> ·
+    <a href="https://wa.me/918186862621" target="_blank" rel="noopener">WhatsApp +91-8186862621</a>
+  </div>
+  <div>© 2026 ASTRO · Dr Ravi Raja Pothineni</div>
+</footer>
+<script>
+// one dropdown open at a time; close on outside click
+document.addEventListener('click', e => document.querySelectorAll('nav details[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }));
+// size each tool frame to its content (same origin). Tools that fill the viewport (vh units) or have a
+// zero-height body report scrollHeight == frame height / ~0: those keep their original aspect ratio.
+document.querySelectorAll('main iframe[src^="tools/"]').forEach(f => {
+  const fit = () => {
+    const b = f.contentDocument && f.contentDocument.body;
+    if (!b) return;
+    const sh = b.scrollHeight;
+    if (sh < 50 || Math.abs(sh - f.clientHeight) <= 4) return;
+    const h = Math.min(sh + 16, 4000);
+    if (Math.abs(f.offsetHeight - h) > 8) { f.style.aspectRatio = 'auto'; f.style.minHeight = '0'; f.style.height = h + 'px'; }
+  };
+  const start = () => { fit(); new ResizeObserver(fit).observe(f.contentDocument.body); };
+  f.addEventListener('load', start);
+  if (f.contentDocument && f.contentDocument.readyState === 'complete' && f.contentDocument.body.childElementCount) start();
+});
+</script>
+</body>
+</html>

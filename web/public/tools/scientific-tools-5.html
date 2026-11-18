@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Star Position &amp; Coordinate Simulation Laboratory</title><style>body{margin:0;background:#03060b;color:#e2e8f0}</style></head><body>
+<div style="width: 100%; max-width: 900px; margin: 0 auto; background: #070B14; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 20px; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; box-shadow: 0 12px 40px rgba(0,0,0,0.85); box-sizing: border-box;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+            <h2 style="font-size: 1.2rem; color: #FBBF24; margin: 0; font-weight: 700;">Star Position & Coordinate Simulation Laboratory</h2>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 3px 0 0 0;">Interactive calculations based on standard positional astronomy formulae</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #34D399; font-weight: 700; letter-spacing: 0.8px;">Live Engine Active</div>
+            <div style="font-size: 0.85rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <!-- Simulator Workspace -->
+    <div style="display: grid; grid-template-columns: 320px 1fr; gap: 16px;">
+        
+        <!-- Controls Panel -->
+        <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; font-size: 0.76rem;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; letter-spacing: 0.8px;">🎛️ Simulation Parameters</div>
+            
+            <div>
+                <label style="display: block; color: #8B949E; margin-bottom: 4px;">Observer Latitude (φ): <span id="lbl-lat" style="color: #FBBF24;">30.0° N</span></label>
+                <input type="range" id="sim-lat" min="-90" max="90" step="0.5" value="30" style="width: 100%; accent-color: #FBBF24; cursor: pointer;">
+            </div>
+
+            <div>
+                <label style="display: block; color: #8B949E; margin-bottom: 4px;">Star Declination (δ): <span id="lbl-dec" style="color: #38BDF8;">20.0°</span></label>
+                <input type="range" id="sim-dec" min="-90" max="90" step="0.5" value="20" style="width: 100%; accent-color: #38BDF8; cursor: pointer;">
+            </div>
+
+            <div>
+                <label style="display: block; color: #8B949E; margin-bottom: 4px;">Hour Angle H (Degrees): <span id="lbl-ha" style="color: #34D399;">45.0°</span></label>
+                <input type="range" id="sim-ha" min="-180" max="180" step="1" value="45" style="width: 100%; accent-color: #34D399; cursor: pointer;">
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px;">
+                <span style="color: #8B949E; display: block; font-size: 0.65rem; text-transform: uppercase; margin-bottom: 2px;">Active Formula Reference[cite: 2]</span>
+                <code style="font-size: 0.68rem; color: #FBBF24; display: block; line-height: 1.3;">sin(a) = sin(φ)sin(δ) + cos(φ)cos(δ)cos(H)</code>
+            </div>
+        </div>
+
+        <!-- Results Display Panel -->
+        <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.8px;">📊 Real-Time Computed Metrics</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.65rem;">Calculated Altitude (a)</span>
+                        <span id="res-alt" style="font-size: 1.15rem; color: #34D399; font-weight: 700; font-family: monospace;">--</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.65rem;">Zenith Distance (z)</span>
+                        <span id="res-zen" style="font-size: 1.15rem; color: #38BDF8; font-weight: 700; font-family: monospace;">--</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.65rem;">Calculated Azimuth (A)</span>
+                        <span id="res-az" style="font-size: 1.15rem; color: #FBBF24; font-weight: 700; font-family: monospace;">--</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px;">
+                        <span style="color: #8B949E; display: block; font-size: 0.65rem;">Visibility Status</span>
+                        <span id="res-status" style="font-size: 0.95rem; color: #E6EDF3; font-weight: 600;">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 6px; padding: 10px; font-size: 0.72rem; color: #C9D1D9; line-height: 1.4;">
+                <strong></strong> Adjust sliders to dynamically solve spherical coordinates using standard astronomical relations derived from the problem set.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Simulation Script Logic -->
+    <script>
+        (function(){
+            const sliderLat = document.getElementById('sim-lat');
+            const sliderDec = document.getElementById('sim-dec');
+            const sliderHa = document.getElementById('sim-ha');
+
+            const lblLat = document.getElementById('lbl-lat');
+            const lblDec = document.getElementById('lbl-dec');
+            const lblHa = document.getElementById('lbl-ha');
+
+            const resAlt = document.getElementById('res-alt');
+            const resZen = document.getElementById('res-zen');
+            const resAz = document.getElementById('res-az');
+            const resStatus = document.getElementById('res-status');
+
+            function computePosition() {
+                const phi = parseFloat(sliderLat.value);
+                const delta = parseFloat(sliderDec.value);
+                const H = parseFloat(sliderHa.value);
+
+                lblLat.innerText = phi.toFixed(1) + "° " + (phi >= 0 ? "N" : "S");
+                lblDec.innerText = delta.toFixed(1) + "°";
+                lblHa.innerText = H.toFixed(1) + "°";
+
+                // Convert to radians for math functions
+                const phiRad = phi * (Math.PI / 180);
+                const deltaRad = delta * (Math.PI / 180);
+                const hRad = H * (Math.PI / 180);
+
+                // 1. Altitude formula: sin(a) = sin(phi)sin(delta) + cos(phi)cos(delta)cos(H)[cite: 2]
+                const sinA = (Math.sin(phiRad) * Math.sin(deltaRad)) + (Math.cos(phiRad) * Math.cos(deltaRad) * Math.cos(hRad));
+                const aRad = Math.asin(Math.max(-1, Math.min(1, sinA)));
+                const aDeg = aRad * (180 / Math.PI);
+
+                // 2. Zenith Distance: z = 90 - a[cite: 2]
+                const zDeg = 90.0 - aDeg;
+
+                // 3. Azimuth formula: cos(A) = (sin(delta) - sin(phi)sin(a)) / (cos(phi)cos(a))[cite: 2]
+                let cosA = (Math.sin(deltaRad) - (Math.sin(phiRad) * Math.sin(aRad))) / (Math.cos(phiRad) * Math.cos(aRad));
+                cosA = Math.max(-1, Math.min(1, cosA));
+                let aAzDeg = Math.acos(cosA) * (180 / Math.PI);
+                if (H > 0) {
+                    aAzDeg = 360 - aAzDeg; // Measure westward from North convention
+                }
+
+                // Output metrics
+                resAlt.innerText = aDeg.toFixed(2) + "°";
+                resZen.innerText = zDeg.toFixed(2) + "°";
+                resAz.innerText = aAzDeg.toFixed(2) + "°";
+
+                if (aDeg > 0) {
+                    resStatus.innerHTML = "<span style='color: #34D399;'>Above Horizon (Visible)</span>";
+                } else {
+                    resStatus.innerHTML = "<span style='color: #F87171;'>Below Horizon (Set)</span>";
+                }
+            }
+
+            sliderLat.oninput = computePosition;
+            sliderDec.oninput = computePosition;
+            sliderHa.oninput = computePosition;
+
+            computePosition();
+        })();
+    </script>
+</div>
+</body></html>

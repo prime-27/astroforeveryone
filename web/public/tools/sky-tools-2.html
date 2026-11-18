@@ -1,0 +1,788 @@
+<div id="planisphere-root" style="width: 100%; height: 750px; position: relative; background: #03060B; border-radius: 12px; overflow-y: auto; overflow-x: hidden; font-family: 'Segoe UI', system-ui, sans-serif; color: #E6EDF3; padding: 14px; box-sizing: border-box;">
+    
+    <!-- Screen Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 12px 18px; margin-bottom: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);">
+        <div>
+            <h1 style="font-size: 1.2rem; color: #FBBF24; font-weight: 700; margin: 0;">Interactive Star Chart & Planisphere</h1>
+            <p style="font-size: 0.72rem; color: #8B949E; margin: 2px 0 0 0;">24 Prominent Constellations • Planets & Moon Ephemeris • Indian Observatories (IST)</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #FBBF24; font-weight: 700; letter-spacing: 1px;">Designer</div>
+            <div style="font-size: 0.95rem; color: #FFFFFF; font-weight: 700;">Ravi Raja Pothineni</div>
+        </div>
+    </div>
+
+    <div class="workspace">
+        
+        <!-- Controls Column -->
+        <div class="control-panel">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                <button class="btn-action-print" onclick="triggerPrintEmbed()">🖨️ Print PDF</button>
+                <button class="btn-action-save" onclick="triggerSaveImage()">💾 Save Image</button>
+            </div>
+
+            <div class="section-title">Color Scheme Mode</div>
+            <div class="btn-grid-2">
+                <button class="btn-opt active" id="btn-theme-night" onclick="setTheme('night')">🌌 Night Sky (Navy/Gold)</button>
+                <button class="btn-opt" id="btn-theme-print" onclick="setTheme('print')">📄 Print (Black on White)</button>
+            </div>
+
+            <div class="section-title">Observatory Locations (India)</div>
+            <div class="location-grid">
+                <button class="btn-loc" onclick="setPresetLocation(16.51, 80.51, 'Amaravati (16.5° N)', this)">Amaravati</button>
+                <button class="btn-loc active" onclick="setPresetLocation(17.38, 78.48, 'Hyderabad (17.4° N)', this)">Hyderabad</button>
+                <button class="btn-loc" onclick="setPresetLocation(12.97, 77.59, 'Bengaluru (13.0° N)', this)">Bengaluru</button>
+                <button class="btn-loc" onclick="setPresetLocation(8.52, 76.93, 'Thiruvananthapuram (8.5° N)', this)">T'puram</button>
+                <button class="btn-loc" onclick="setPresetLocation(10.23, 77.46, 'Kodaikanal IIA (10.2° N)', this)">Kodaikanal</button>
+                <button class="btn-loc" onclick="setPresetLocation(18.52, 73.85, 'Pune IUCAA (18.5° N)', this)">Pune</button>
+                <button class="btn-loc" onclick="setPresetLocation(29.39, 79.45, 'Nainital ARIES (29.4° N)', this)">Nainital</button>
+                <button class="btn-loc" onclick="setPresetLocation(22.57, 88.36, 'Kolkata (22.6° N)', this)">Kolkata</button>
+                <button class="btn-loc" onclick="setPresetLocation(28.61, 77.20, 'Delhi (28.6° N)', this)">Delhi</button>
+            </div>
+
+            <div class="control-group">
+                <label>Observer Latitude (φ): <span id="txt-lat">17.38° N</span></label>
+                <input type="range" id="rng-lat" min="-90" max="90" step="0.1" value="17.38">
+            </div>
+
+            <div class="control-group">
+                <label>Observation Time (IST): <span id="txt-hour">21:00 IST</span></label>
+                <input type="range" id="rng-hour" min="0" max="24" step="0.25" value="21.0">
+            </div>
+
+            <!-- Date Picker Control (Auto-defaults to present date) -->
+            <div class="control-group" style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                <label>Observation Date (Day-by-Day): <span id="txt-date-display" style="color: #34D399;">--</span></label>
+                <input type="date" id="picker-observation-date" style="width: 100%; background: #161B22; border: 1px solid rgba(255,255,255,0.15); color: #E6EDF3; padding: 5px 8px; border-radius: 6px; font-size: 0.76rem; font-family: monospace; margin-top: 4px; cursor: pointer;">
+            </div>
+
+            <div class="section-title">Display Layers</div>
+            <div class="toggle-stack">
+                <label><input type="checkbox" id="chk-planets" checked>Planets & Moon Phase</label>
+                <label><input type="checkbox" id="chk-stars" checked>Bright Stars (Magnitude ≥ 3.0)</label>
+                <label><input type="checkbox" id="chk-constellations" checked>24 Prominent Constellations</label>
+                <label><input type="checkbox" id="chk-const-labels" checked>Constellation Names (Indian / IAU)</label>
+                <label><input type="checkbox" id="chk-dsos" checked>Deep Sky Objects (Messier DSOs)</label>
+                <label><input type="checkbox" id="chk-ecliptic" checked>Ecliptic & Celestial Equator</label>
+                <label><input type="checkbox" id="chk-altaz-grid" checked>Altitude & Azimuth Grid (15° Rings)</label>
+            </div>
+        </div>
+
+        <!-- Planisphere Canvas Column -->
+        <div class="chart-card">
+            <canvas id="star-chart-canvas" width="760" height="760"></canvas>
+            
+            <div class="summary-box" id="chart-summary">
+                <strong>Planisphere Telemetry:</strong> Initializing...
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .workspace { display: grid; grid-template-columns: 360px 1fr; gap: 14px; align-items: start; }
+        @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } }
+
+        .control-panel {
+            background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+        .section-title { font-size: 0.68rem; text-transform: uppercase; color: #79C0FF; font-weight: 700; margin: 10px 0 4px 0; letter-spacing: 0.8px; }
+        
+        .control-group { margin-bottom: 8px; }
+        .control-group label { display: flex; justify-content: space-between; font-size: 0.74rem; color: #C9D1D9; margin-bottom: 2px; }
+        .control-group span { color: #FBBF24; font-weight: 600; font-family: 'Consolas', monospace; }
+        input[type=range] { width: 100%; accent-color: #FBBF24; cursor: pointer; }
+
+        .btn-action-print {
+            padding: 8px; background: #0284C7; border: 1px solid #38BDF8;
+            color: #FFFFFF; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+        }
+        .btn-action-print:hover { background: #0369A1; }
+
+        .btn-action-save {
+            padding: 8px; background: #238636; border: 1px solid #2EA043;
+            color: #FFFFFF; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(35, 134, 54, 0.4);
+        }
+        .btn-action-save:hover { background: #2EA043; }
+
+        .btn-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 8px; }
+        .btn-opt {
+            padding: 6px 4px; background: #1E293B; border: 1px solid rgba(255,255,255,0.1);
+            color: #CBD5E1; border-radius: 6px; font-size: 0.70rem; cursor: pointer; font-weight: 600; text-align: center;
+        }
+        .btn-opt:hover { background: #334155; border-color: #FBBF24; color: #FBBF24; }
+        .btn-opt.active { background: #B45309; color: #FFF; border-color: #FBBF24; font-weight: 700; }
+
+        .location-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-bottom: 8px; }
+        .btn-loc {
+            padding: 5px 2px; background: #161B22; border: 1px solid rgba(255,255,255,0.1);
+            color: #CBD5E1; border-radius: 6px; font-size: 0.68rem; cursor: pointer; text-align: center; font-weight: 600;
+        }
+        .btn-loc:hover { background: #21262D; border-color: #38BDF8; color: #38BDF8; }
+        .btn-loc.active { background: #0284C7; color: #FFF; border-color: #38BDF8; font-weight: 700; }
+
+        .toggle-stack { display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; color: #C9D1D9; }
+        .toggle-stack label { display: flex; align-items: center; cursor: pointer; }
+        .toggle-stack input { margin-right: 7px; accent-color: #FBBF24; }
+
+        .chart-card {
+            background: rgba(13, 17, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        #star-chart-canvas {
+            background: #02040A; border-radius: 50%; border: 3px solid #38BDF8;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.2); max-width: 100%; height: auto;
+        }
+
+        .summary-box {
+            width: 100%; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px; padding: 10px; margin-top: 12px; font-family: 'Consolas', monospace; font-size: 0.74rem; text-align: left;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+    <script>
+        (function(){
+            const BRIGHT_STARS = [
+                { name: "Sirius (Lubdhaka)", ra: 101.29, dec: -16.72, mag: -1.46, col: "#A5F3FC" },
+                { name: "Canopus (Agastya)", ra: 95.99, dec: -52.70, mag: -0.74, col: "#FFFFFF" },
+                { name: "Rigil Kent (Alpha Cen)", ra: 219.90, dec: -60.83, mag: -0.27, col: "#FEF08A" },
+                { name: "Arcturus (Swati)", ra: 213.92, dec: 19.18, mag: -0.05, col: "#FDBA74" },
+                { name: "Vega (Abhijit)", ra: 279.23, dec: 38.78, mag: 0.03, col: "#E0F2FE" },
+                { name: "Capella (Brahma-hridaya)", ra: 79.17, dec: 45.99, mag: 0.08, col: "#FDE047" },
+                { name: "Rigel (Bāṇa-rājā)", ra: 78.63, dec: -8.20, mag: 0.13, col: "#BAE6FD" },
+                { name: "Procyon (Sarama)", ra: 114.83, dec: 5.22, mag: 0.38, col: "#FEF9C3" },
+                { name: "Betelgeuse (Ardra)", ra: 88.79, dec: 7.41, mag: 0.50, col: "#F87171" },
+                { name: "Achernar", ra: 24.43, dec: -57.24, mag: 0.46, col: "#93C5FD" },
+                { name: "Hadar (Agena / Beta Cen)", ra: 210.96, dec: -60.37, mag: 0.61, col: "#BFDBFE" },
+                { name: "Altair (Shravana)", ra: 297.70, dec: 8.87, mag: 0.76, col: "#FFFFFF" },
+                { name: "Aldebaran (Rohini)", ra: 68.98, dec: 16.51, mag: 0.86, col: "#FB923C" },
+                { name: "Antares (Jyeshtha)", ra: 247.35, dec: -26.43, mag: 0.96, col: "#EF4444" },
+                { name: "Spica (Chitra)", ra: 201.30, dec: -11.16, mag: 0.97, col: "#93C5FD" },
+                { name: "Pollux (Punarvasu-1)", ra: 116.33, dec: 28.03, mag: 1.14, col: "#FBBF24" },
+                { name: "Castor (Punarvasu-2)", ra: 113.65, dec: 31.89, mag: 1.58, col: "#BAE6FD" },
+                { name: "Fomalhaut", ra: 344.41, dec: -29.62, mag: 1.16, col: "#E0E7FF" },
+                { name: "Deneb", ra: 310.36, dec: 45.28, mag: 1.25, col: "#FFFFFF" },
+                { name: "Regulus (Magha)", ra: 152.09, dec: 11.97, mag: 1.39, col: "#BAE6FD" },
+                { name: "Polaris (Dhruva)", ra: 37.95, dec: 89.26, mag: 1.98, col: "#FEF08A" }
+            ];
+
+            const CONSTELLATIONS = [
+                {
+                    name: "Sagittarius (Dhanu / Teapot)",
+                    labelRa: 284.0, labelDec: -28.0,
+                    stars: [
+                        { ra: 271.45, dec: -29.83 }, { ra: 273.44, dec: -25.42 }, { ra: 276.99, dec: -21.06 },
+                        { ra: 283.82, dec: -26.30 }, { ra: 286.49, dec: -27.83 }, { ra: 282.52, dec: -34.38 },
+                        { ra: 277.58, dec: -36.76 }, { ra: 271.97, dec: -34.38 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 0], [3, 4], [0, 5], [5, 4], [0, 7], [7, 6], [6, 5]]
+                },
+                {
+                    name: "Scorpius (Vrishchika)",
+                    labelRa: 248.0, labelDec: -32.0,
+                    stars: [
+                        { ra: 241.36, dec: -19.80 }, { ra: 247.35, dec: -26.43 }, { ra: 253.48, dec: -34.29 },
+                        { ra: 263.40, dec: -37.30 }, { ra: 268.46, dec: -39.03 }, { ra: 269.15, dec: -43.00 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]
+                },
+                {
+                    name: "Ursa Major (Saptarshi)",
+                    labelRa: 185.0, labelDec: 58.0,
+                    stars: [
+                        { ra: 165.93, dec: 61.75 }, { ra: 165.46, dec: 56.38 }, { ra: 178.46, dec: 53.69 },
+                        { ra: 183.86, dec: 57.03 }, { ra: 193.51, dec: 55.96 }, { ra: 200.98, dec: 54.92 }, { ra: 206.89, dec: 49.31 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 0], [3, 4], [4, 5], [5, 6]]
+                },
+                {
+                    name: "Ursa Minor (Dhruva / Polaris)",
+                    labelRa: 230.0, labelDec: 78.0,
+                    stars: [
+                        { ra: 37.95, dec: 89.26 }, { ra: 260.10, dec: 77.79 }, { ra: 236.40, dec: 75.76 },
+                        { ra: 227.00, dec: 74.16 }, { ra: 226.25, dec: 71.83 }, { ra: 234.20, dec: 72.19 }, { ra: 238.00, dec: 74.30 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]]
+                },
+                {
+                    name: "Orion (Mriga)",
+                    labelRa: 84.0, labelDec: 9.5,
+                    stars: [
+                        { ra: 88.79, dec: 7.41 }, { ra: 81.28, dec: 6.35 }, { ra: 85.19, dec: -1.94 },
+                        { ra: 84.05, dec: -1.20 }, { ra: 83.00, dec: -0.30 }, { ra: 86.94, dec: -9.67 }, { ra: 78.63, dec: -8.20 }
+                    ],
+                    lines: [[0, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [5, 6]]
+                },
+                {
+                    name: "Canis Major (Mahashva)",
+                    labelRa: 104.0, labelDec: -22.0,
+                    stars: [
+                        { ra: 101.29, dec: -16.72 }, { ra: 95.67, dec: -17.96 }, { ra: 104.66, dec: -28.97 },
+                        { ra: 105.76, dec: -26.39 }, { ra: 102.46, dec: -30.06 }
+                    ],
+                    lines: [[0, 1], [0, 3], [3, 2], [2, 4]]
+                },
+                {
+                    name: "Canis Minor (Sarama)",
+                    labelRa: 110.0, labelDec: 7.0,
+                    stars: [
+                        { ra: 114.83, dec: 5.22 }, { ra: 108.00, dec: 8.29 }
+                    ],
+                    lines: [[0, 1]]
+                },
+                {
+                    name: "Taurus (Vrishabha)",
+                    labelRa: 68.0, labelDec: 22.0,
+                    stars: [
+                        { ra: 68.98, dec: 16.51 }, { ra: 84.41, dec: 28.61 }, { ra: 81.57, dec: 9.93 }, { ra: 56.75, dec: 24.11 }
+                    ],
+                    lines: [[0, 1], [0, 2], [0, 3]]
+                },
+                {
+                    name: "Gemini (Mithuna)",
+                    labelRa: 108.0, labelDec: 24.0,
+                    stars: [
+                        { ra: 116.33, dec: 28.03 }, { ra: 113.65, dec: 31.89 }, { ra: 99.43, dec: 16.40 },
+                        { ra: 106.03, dec: 20.57 }, { ra: 108.79, dec: 12.90 }
+                    ],
+                    lines: [[0, 3], [3, 4], [1, 2]]
+                },
+                {
+                    name: "Leo (Simha)",
+                    labelRa: 160.0, labelDec: 15.0,
+                    stars: [
+                        { ra: 152.09, dec: 11.97 }, { ra: 154.17, dec: 19.84 }, { ra: 152.95, dec: 23.42 },
+                        { ra: 177.26, dec: 14.57 }, { ra: 169.55, dec: 15.43 }, { ra: 157.04, dec: 13.86 }
+                    ],
+                    lines: [[0, 5], [5, 1], [1, 2], [5, 4], [4, 3]]
+                },
+                {
+                    name: "Virgo (Kanya / Chitra)",
+                    labelRa: 195.0, labelDec: 2.0,
+                    stars: [
+                        { ra: 201.30, dec: -11.16 }, { ra: 197.97, dec: -1.45 }, { ra: 193.30, dec: 3.40 },
+                        { ra: 190.43, dec: -0.67 }, { ra: 195.60, dec: 10.96 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [2, 4]]
+                },
+                {
+                    name: "Cassiopeia (Sharmistha)",
+                    labelRa: 15.0, labelDec: 62.0,
+                    stars: [
+                        { ra: 2.29, dec: 59.15 }, { ra: 10.13, dec: 56.54 }, { ra: 14.18, dec: 60.72 },
+                        { ra: 21.45, dec: 60.23 }, { ra: 26.65, dec: 63.67 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4]]
+                },
+                {
+                    name: "Cygnus (Hamsa / Swan)",
+                    labelRa: 310.0, labelDec: 42.0,
+                    stars: [
+                        { ra: 310.36, dec: 45.28 }, { ra: 305.56, dec: 40.26 }, { ra: 295.21, dec: 27.96 },
+                        { ra: 298.59, dec: 45.13 }, { ra: 320.66, dec: 33.97 }
+                    ],
+                    lines: [[0, 1], [1, 2], [1, 3], [1, 4]]
+                },
+                {
+                    name: "Lyra (Abhijit / Vega)",
+                    labelRa: 282.0, labelDec: 36.0,
+                    stars: [
+                        { ra: 279.23, dec: 38.78 }, { ra: 282.50, dec: 33.36 }, { ra: 285.20, dec: 32.69 },
+                        { ra: 287.00, dec: 36.90 }, { ra: 284.00, dec: 37.60 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 1]]
+                },
+                {
+                    name: "Aquila (Garuda / Shravana)",
+                    labelRa: 297.0, labelDec: 5.0,
+                    stars: [
+                        { ra: 297.70, dec: 8.87 }, { ra: 296.30, dec: 10.61 }, { ra: 298.80, dec: 6.40 },
+                        { ra: 286.00, dec: 13.86 }, { ra: 286.40, dec: 1.50 }
+                    ],
+                    lines: [[1, 0], [0, 2], [0, 3], [0, 4]]
+                },
+                {
+                    name: "Pegasus (Great Square)",
+                    labelRa: 345.0, labelDec: 20.0,
+                    stars: [
+                        { ra: 346.19, dec: 15.21 }, { ra: 346.62, dec: 28.08 }, { ra: 0.14, dec: 15.18 }, { ra: 2.10, dec: 29.09 }
+                    ],
+                    lines: [[0, 1], [1, 3], [3, 2], [2, 0]]
+                },
+                {
+                    name: "Andromeda (Devayani)",
+                    labelRa: 18.0, labelDec: 38.0,
+                    stars: [
+                        { ra: 2.10, dec: 29.09 }, { ra: 17.43, dec: 35.62 }, { ra: 30.97, dec: 42.33 }
+                    ],
+                    lines: [[0, 1], [1, 2]]
+                },
+                {
+                    name: "Boötes (Bhutesh / Arcturus)",
+                    labelRa: 218.0, labelDec: 25.0,
+                    stars: [
+                        { ra: 213.92, dec: 19.18 }, { ra: 218.00, dec: 27.07 }, { ra: 221.20, dec: 33.31 },
+                        { ra: 229.00, dec: 38.30 }, { ra: 220.00, dec: 13.70 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [0, 4]]
+                },
+                {
+                    name: "Crux (Trishanku)",
+                    labelRa: 187.0, labelDec: -65.0,
+                    stars: [
+                        { ra: 186.65, dec: -63.10 }, { ra: 191.93, dec: -59.69 }, { ra: 187.79, dec: -57.11 }, { ra: 183.79, dec: -58.75 }
+                    ],
+                    lines: [[0, 2], [1, 3]]
+                },
+                {
+                    name: "Centaurus (Kinnara)",
+                    labelRa: 205.0, labelDec: -50.0,
+                    stars: [
+                        { ra: 219.90, dec: -60.83 }, { ra: 210.96, dec: -60.37 }, { ra: 206.90, dec: -47.29 },
+                        { ra: 208.50, dec: -42.15 }, { ra: 181.60, dec: -48.96 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [2, 4]]
+                },
+                {
+                    name: "Carina (Agastya)",
+                    labelRa: 120.0, labelDec: -62.0,
+                    stars: [
+                        { ra: 95.99, dec: -52.70 }, { ra: 138.00, dec: -69.72 }, { ra: 140.00, dec: -59.20 }
+                    ],
+                    lines: [[0, 1], [1, 2]]
+                },
+                {
+                    name: "Auriga (Brahma-hridaya)",
+                    labelRa: 82.0, labelDec: 42.0,
+                    stars: [
+                        { ra: 79.17, dec: 45.99 }, { ra: 89.80, dec: 44.95 }, { ra: 84.41, dec: 28.61 },
+                        { ra: 74.00, dec: 30.00 }, { ra: 74.90, dec: 41.23 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]
+                },
+                {
+                    name: "Ophiuchus (Serpent Bearer)",
+                    labelRa: 260.0, labelDec: -2.0,
+                    stars: [
+                        { ra: 263.70, dec: 12.56 }, { ra: 243.60, dec: -3.69 }, { ra: 247.10, dec: -10.57 },
+                        { ra: 263.30, dec: -4.69 }, { ra: 268.00, dec: 9.38 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]
+                },
+                {
+                    name: "Hercules (Shauryavan)",
+                    labelRa: 250.0, labelDec: 28.0,
+                    stars: [
+                        { ra: 248.00, dec: 14.39 }, { ra: 243.00, dec: 21.49 }, { ra: 257.00, dec: 24.84 },
+                        { ra: 250.42, dec: 36.46 }, { ra: 260.00, dec: 37.80 }
+                    ],
+                    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 2]]
+                }
+            ];
+
+            const DEEP_SKY_OBJECTS = [
+                { name: "M31 Andromeda Galaxy", ra: 10.68, dec: 41.27 },
+                { name: "M42 Orion Nebula", ra: 83.82, dec: -5.39 },
+                { name: "M45 Pleiades (Krittika)", ra: 56.75, dec: 24.11 },
+                { name: "M13 Hercules Cluster", ra: 250.42, dec: 36.46 },
+                { name: "M8 Lagoon Nebula", ra: 271.08, dec: -24.38 }
+            ];
+
+            let observerLat = 17.38;
+            let observerLon = 78.48;
+            
+            // Automatically initialize to present date
+            let currentDateObj = new Date();
+            let istHour = 21.0;
+            let currentTheme = 'night';
+            let locationLabel = "Hyderabad (17.4° N)";
+
+            // Set initial date picker value to today's date string (YYYY-MM-DD)
+            const todayStr = currentDateObj.toISOString().slice(0, 10);
+            document.getElementById('picker-observation-date').value = todayStr;
+            document.getElementById('txt-date-display').innerText = todayStr;
+
+            const cv = document.getElementById('star-chart-canvas');
+            const ctx = cv.getContext('2d');
+            const cx = 380, cy = 380, R_CHART = 340;
+
+            function radecToAltAz(raDeg, decDeg, lstDeg, phiDeg) {
+                const H = (lstDeg - raDeg) * Math.PI / 180;
+                const d = decDeg * Math.PI / 180;
+                const p = phiDeg * Math.PI / 180;
+
+                const sinAlt = Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H);
+                const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
+                const cosAlt = Math.cos(alt);
+
+                let az = 0;
+                if (Math.abs(cosAlt) > 1e-5 && Math.abs(Math.cos(p)) > 1e-5) {
+                    const cosAz = (Math.sin(d) - Math.sin(p) * sinAlt) / (Math.cos(p) * cosAlt);
+                    az = Math.acos(Math.max(-1, Math.min(1, cosAz)));
+                    if (Math.sin(H) > 0) az = 2 * Math.PI - az;
+                }
+
+                return {
+                    altDeg: alt * (180 / Math.PI),
+                    azDeg: az * (180 / Math.PI)
+                };
+            }
+
+            function altAzToCanvas(altDeg, azDeg) {
+                if (isNaN(altDeg) || isNaN(azDeg) || altDeg < 0) return null;
+                const r = R_CHART * ((90 - altDeg) / 90.0);
+                const a = azDeg * (Math.PI / 180);
+                return {
+                    x: cx - r * Math.sin(a),
+                    y: cy - r * Math.cos(a)
+                };
+            }
+
+            function calculateEphemerisWithAstronomyEngine() {
+                const yr = currentDateObj.getFullYear();
+                const mo = currentDateObj.getMonth();
+                const dy = currentDateObj.getDate();
+                const hr = Math.floor(istHour);
+                const mn = Math.floor((istHour - hr) * 60);
+
+                const istMillis = Date.UTC(yr, mo, dy, hr, mn, 0);
+                const utcDate = new Date(istMillis - (5.5 * 60 * 60 * 1000));
+
+                const observer = new Astronomy.Observer(observerLat, observerLon, 0);
+                const astTime = Astronomy.MakeTime(utcDate);
+                const lstDeg = Astronomy.SiderealTime(astTime) * 15.0 + observerLon;
+                let LST = (lstDeg % 360 + 360) % 360;
+
+                const moonEquator = Astronomy.Equator(Astronomy.Body.Moon, astTime, observer, true, true);
+                const moonIllum = Astronomy.Illumination(Astronomy.Body.Moon, astTime);
+                const moonIllumPct = moonIllum.phase_fraction * 100;
+
+                const planetBodies = [
+                    { id: "Mercury", body: Astronomy.Body.Mercury, symbol: "☿", col: "#A5A5A5" },
+                    { id: "Venus", body: Astronomy.Body.Venus, symbol: "♀", col: "#E3BB7B" },
+                    { id: "Mars", body: Astronomy.Body.Mars, symbol: "♂", col: "#EF4444" },
+                    { id: "Jupiter", body: Astronomy.Body.Jupiter, symbol: "♃", col: "#F59E0B" },
+                    { id: "Saturn", body: Astronomy.Body.Saturn, symbol: "♄", col: "#FDE68A" }
+                ];
+
+                const planetSky = planetBodies.map(pl => {
+                    const eq = Astronomy.Equator(pl.body, astTime, observer, true, true);
+                    return { id: pl.id, symbol: pl.symbol, col: pl.col, ra: eq.ra * 15.0, dec: eq.dec };
+                });
+
+                return {
+                    LST,
+                    moonRA: moonEquator.ra * 15.0,
+                    moonDec: moonEquator.dec,
+                    moonIllum: moonIllumPct,
+                    planetSky
+                };
+            }
+
+            function renderPlanisphere() {
+                try {
+                    ctx.clearRect(0, 0, 760, 760);
+                    const eph = calculateEphemerisWithAstronomyEngine();
+
+                    const isNight = currentTheme === 'night';
+                    const colBg = isNight ? '#030712' : '#FFFFFF';
+                    const colBorder = isNight ? '#38BDF8' : '#0F172A';
+                    const colGrid = isNight ? 'rgba(56, 189, 248, 0.15)' : 'rgba(0, 0, 0, 0.12)';
+                    const colStars = isNight ? '#FFFFFF' : '#0F172A';
+                    const colLines = isNight ? 'rgba(147, 197, 253, 0.45)' : 'rgba(30, 41, 59, 0.65)';
+                    const colText = isNight ? '#94A3B8' : '#334155';
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, R_CHART, 0, Math.PI * 2);
+                    ctx.fillStyle = colBg;
+                    ctx.fill();
+                    ctx.clip();
+
+                    if (document.getElementById('chk-altaz-grid').checked) {
+                        ctx.strokeStyle = colGrid;
+                        ctx.lineWidth = 1;
+                        [30, 60, 75].forEach(alt => {
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, R_CHART * ((90 - alt) / 90.0), 0, Math.PI * 2);
+                            ctx.stroke();
+                        });
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - R_CHART); ctx.lineTo(cx, cy + R_CHART);
+                        ctx.moveTo(cx - R_CHART, cy); ctx.lineTo(cx + R_CHART, cy);
+                        ctx.stroke();
+                    }
+
+                    if (document.getElementById('chk-ecliptic').checked) {
+                        ctx.strokeStyle = isNight ? 'rgba(0, 229, 255, 0.4)' : 'rgba(2, 132, 199, 0.4)';
+                        ctx.lineWidth = 1.2;
+                        let drawing = false;
+                        ctx.beginPath();
+                        for (let i = 0; i <= 90; i++) {
+                            const hor = radecToAltAz((i / 90) * 360, 0, eph.LST, observerLat);
+                            const p = altAzToCanvas(hor.altDeg, hor.azDeg);
+                            if (p) {
+                                if (!drawing) { ctx.moveTo(p.x, p.y); drawing = true; }
+                                else { ctx.lineTo(p.x, p.y); }
+                            } else {
+                                drawing = false;
+                            }
+                        }
+                        ctx.stroke();
+                    }
+
+                    if (document.getElementById('chk-constellations').checked) {
+                        CONSTELLATIONS.forEach(c => {
+                            const mappedStars = c.stars.map(s => {
+                                const hor = radecToAltAz(s.ra, s.dec, eph.LST, observerLat);
+                                return altAzToCanvas(hor.altDeg, hor.azDeg);
+                            });
+
+                            ctx.strokeStyle = colLines;
+                            ctx.lineWidth = 1.2;
+                            c.lines.forEach(pair => {
+                                const p1 = mappedStars[pair[0]];
+                                const p2 = mappedStars[pair[1]];
+                                if (p1 && p2) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(p1.x, p1.y);
+                                    ctx.lineTo(p2.x, p2.y);
+                                    ctx.stroke();
+                                }
+                            });
+
+                            if (document.getElementById('chk-const-labels').checked) {
+                                const lHor = radecToAltAz(c.labelRa, c.labelDec, eph.LST, observerLat);
+                                const lp = altAzToCanvas(lHor.altDeg, lHor.azDeg);
+                                if (lp) {
+                                    ctx.fillStyle = isNight ? '#FBBF24' : '#B45309';
+                                    ctx.font = 'bold 9px sans-serif';
+                                    ctx.textAlign = 'center';
+                                    ctx.fillText(c.name, lp.x, lp.y);
+                                }
+                            }
+                        });
+                    }
+
+                    if (document.getElementById('chk-dsos').checked) {
+                        DEEP_SKY_OBJECTS.forEach(dso => {
+                            const hor = radecToAltAz(dso.ra, dso.dec, eph.LST, observerLat);
+                            const p = altAzToCanvas(hor.altDeg, hor.azDeg);
+                            if (p) {
+                                ctx.strokeStyle = isNight ? '#C084FC' : '#7E22CE';
+                                ctx.lineWidth = 1.5;
+                                ctx.strokeRect(p.x - 3, p.y - 3, 6, 6);
+                                ctx.fillStyle = isNight ? '#D8B4FE' : '#6B21A8';
+                                ctx.font = '9px sans-serif';
+                                ctx.textAlign = 'left';
+                                ctx.fillText(dso.name, p.x + 5, p.y + 3);
+                            }
+                        });
+                    }
+
+                    if (document.getElementById('chk-stars').checked) {
+                        BRIGHT_STARS.forEach(s => {
+                            const hor = radecToAltAz(s.ra, s.dec, eph.LST, observerLat);
+                            const p = altAzToCanvas(hor.altDeg, hor.azDeg);
+                            if (p) {
+                                const r = Math.max(1.8, 4.2 - (s.mag + 1.5) * 0.8);
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+                                ctx.fillStyle = isNight ? s.col : colStars;
+                                ctx.fill();
+
+                                if (s.mag < 1.1) {
+                                    ctx.fillStyle = colText;
+                                    ctx.font = '9px sans-serif';
+                                    ctx.textAlign = 'left';
+                                    ctx.fillText(s.name, p.x + 4, p.y - 2);
+                                }
+                            }
+                        });
+                    }
+
+                    let visiblePlanetsCount = 0;
+                    let moonVisible = false;
+                    if (document.getElementById('chk-planets').checked) {
+                        eph.planetSky.forEach(pl => {
+                            const hor = radecToAltAz(pl.ra, pl.dec, eph.LST, observerLat);
+                            const p = altAzToCanvas(hor.altDeg, hor.azDeg);
+                            if (p) {
+                                visiblePlanetsCount++;
+                                ctx.beginPath();
+                                ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+                                ctx.fillStyle = isNight ? pl.col : '#B45309';
+                                ctx.fill();
+                                ctx.strokeStyle = '#FFFFFF';
+                                ctx.lineWidth = 1.5;
+                                ctx.stroke();
+
+                                ctx.fillStyle = isNight ? '#FFFFFF' : '#000000';
+                                ctx.font = 'bold 10.5px sans-serif';
+                                ctx.textAlign = 'left';
+                                ctx.fillText(`${pl.symbol} ${pl.id}`, p.x + 7, p.y + 4);
+                            }
+                        });
+
+                        const mHor = radecToAltAz(eph.moonRA, eph.moonDec, eph.LST, observerLat);
+                        const mp = altAzToCanvas(mHor.altDeg, mHor.azDeg);
+                        if (mp) {
+                            moonVisible = true;
+                            ctx.beginPath();
+                            ctx.arc(mp.x, mp.y, 7.0, 0, Math.PI * 2);
+                            ctx.fillStyle = isNight ? '#FDE047' : '#D97706';
+                            ctx.fill();
+                            ctx.strokeStyle = '#FFFFFF';
+                            ctx.lineWidth = 1.5;
+                            ctx.stroke();
+
+                            ctx.fillStyle = isNight ? '#FBBF24' : '#78350F';
+                            ctx.font = 'bold 11px sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.fillText(`Moon (${eph.moonIllum.toFixed(0)}% Illum)`, mp.x + 10, mp.y + 4);
+                        }
+                    }
+
+                    ctx.restore();
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, R_CHART, 0, Math.PI * 2);
+                    ctx.strokeStyle = colBorder;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    const cardinals = [
+                        { name: "N (North)", x: cx, y: cy - R_CHART - 10, align: 'center' },
+                        { name: "E (East)", x: cx - R_CHART - 10, y: cy + 4, align: 'right' },
+                        { name: "S (South)", x: cx, y: cy + R_CHART + 16, align: 'center' },
+                        { name: "W (West)", x: cx + R_CHART + 10, y: cy + 4, align: 'left' }
+                    ];
+
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillStyle = isNight ? '#38BDF8' : '#0F172A';
+                    cardinals.forEach(c => {
+                        ctx.textAlign = c.align;
+                        ctx.fillText(c.name, c.x, c.y);
+                    });
+
+                    const dateStr = currentDateObj.toISOString().slice(0, 10);
+                    const h = Math.floor(istHour);
+                    const m = Math.floor((istHour - h) * 60);
+                    document.getElementById('chart-summary').innerHTML = `
+                        <strong>Location:</strong> ${locationLabel} | 
+                        <strong>Date & Time:</strong> ${dateStr} @ ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} IST | 
+                        <strong>Moon:</strong> RA ${(eph.moonRA/15).toFixed(1)}h, ${eph.moonIllum.toFixed(1)}% Illum (${moonVisible ? 'Above Horizon' : 'Set Below Horizon'}) | 
+                        <strong>Planets:</strong> ${visiblePlanetsCount} Visible | 
+                        <strong>Designer:</strong> Ravi Raja Pothineni
+                    `;
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            window.triggerPrintEmbed = function() {
+                setTheme('print');
+                setTimeout(() => {
+                    const canvasDataURL = cv.toDataURL('image/png');
+                    const summaryHTML = document.getElementById('chart-summary').innerHTML;
+                    
+                    const printWin = window.open('', '_blank');
+                    if (!printWin) {
+                        alert("Please allow popups to open the printable planisphere document.");
+                        return;
+                    }
+                    
+                    printWin.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Planisphere - Ravi Raja Pothineni, Professional Astronomer</title>
+                            <style>
+                                body { font-family: 'Segoe UI', system-ui, sans-serif; text-align: center; margin: 20px; background: #FFF; color: #000; }
+                                .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+                                h1 { font-size: 20px; text-transform: uppercase; margin: 0 0 4px 0; }
+                                .author { font-size: 14px; font-weight: 800; color: #000; }
+                                img { max-width: 620px; width: 100%; height: auto; border: 2px solid #000; border-radius: 50%; margin: 10px 0; }
+                                .telemetry { font-family: monospace; font-size: 12px; border: 1px solid #000; padding: 10px; border-radius: 6px; text-align: left; max-width: 660px; margin: 0 auto; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>Topocentric Planisphere & Star Chart</h1>
+                                <div class="author">Ravi Raja Pothineni, Professional Astronomer</div>
+                            </div>
+                            <img src=_%24%7bcanvasDataURL%7d_.html alt="Star Chart Planisphere">
+                            <div class="telemetry">${summaryHTML}</div>
+                            <script>
+                                window.onload = function() { window.print(); };
+                            <\/script>
+                        </body>
+                        </html>
+                    `);
+                    printWin.document.close();
+                }, 300);
+            };
+
+            window.triggerSaveImage = function() {
+                const link = document.createElement('a');
+                const dateStr = currentDateObj.toISOString().slice(0, 10);
+                link.download = `Star_Chart_${locationLabel.split(' ')[0]}_${dateStr}.png`;
+                link.href = cv.toDataURL('image/png');
+                link.click();
+            };
+
+            window.setPresetLocation = function(lat, lon, label, btn) {
+                observerLat = lat; observerLon = lon; locationLabel = label;
+                document.querySelectorAll('.btn-loc').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+
+                document.getElementById('rng-lat').value = lat;
+                document.getElementById('txt-lat').innerText = `${lat.toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}`;
+                renderPlanisphere();
+            };
+
+            window.setTheme = function(theme) {
+                currentTheme = theme;
+                document.getElementById('btn-theme-night').classList.toggle('active', theme === 'night');
+                document.getElementById('btn-theme-print').classList.toggle('active', theme === 'print');
+                renderPlanisphere();
+            };
+
+            document.getElementById('rng-lat').oninput = (e) => {
+                observerLat = parseFloat(e.target.value);
+                locationLabel = `Custom Location (${observerLat.toFixed(2)}° N)`;
+                document.getElementById('txt-lat').innerText = `${observerLat.toFixed(2)}° ${observerLat >= 0 ? 'N' : 'S'}`;
+                document.querySelectorAll('.btn-loc').forEach(b => b.classList.remove('active'));
+                renderPlanisphere();
+            };
+
+            document.getElementById('rng-hour').oninput = (e) => {
+                istHour = parseFloat(e.target.value);
+                const h = Math.floor(istHour);
+                const m = Math.floor((istHour - h) * 60);
+                document.getElementById('txt-hour').innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} IST`;
+                renderPlanisphere();
+            };
+
+            const datePicker = document.getElementById('picker-observation-date');
+            datePicker.oninput = (e) => {
+                const val = e.target.value;
+                if (val) {
+                    const parts = val.split('-');
+                    currentDateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+                    document.getElementById('txt-date-display').innerText = val;
+                    renderPlanisphere();
+                }
+            };
+
+            ['chk-planets', 'chk-stars', 'chk-constellations', 'chk-const-labels', 'chk-dsos', 'chk-ecliptic', 'chk-altaz-grid'].forEach(id => {
+                document.getElementById(id).onchange = renderPlanisphere;
+            });
+
+            renderPlanisphere();
+        })();
+    </script>
+</div>
