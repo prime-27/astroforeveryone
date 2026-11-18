@@ -58,6 +58,34 @@ function fieldStars(count, texture) {
   }))
 }
 
+// faint disc stars in rings; each ring gets its own angular speed (inner faster), set in userData.omega
+function diffuseRings(texture, { count = 14000, radius = 6.5, rings = 8 } = {}) {
+  const out = []
+  for (let k = 0; k < rings; k++) {
+    const r0 = (k / rings) * radius, r1 = ((k + 1) / rings) * radius
+    const n = Math.round(count * ((r1 * r1 - r0 * r0) / (radius * radius)))
+    const pos = new Float32Array(n * 3)
+    const col = new Float32Array(n * 3)
+    const c = new THREE.Color()
+    for (let i = 0; i < n; i++) {
+      const r = Math.sqrt(r0 * r0 + Math.random() * (r1 * r1 - r0 * r0)), a = Math.random() * Math.PI * 2
+      pos.set([Math.cos(a) * r, (Math.random() - 0.5) * 0.12 * (1 + r * 0.1), Math.sin(a) * r], i * 3)
+      c.copy(CORE).lerp(ARM, Math.min((r / radius) * 2, 1))
+      col.set([c.r, c.g, c.b], i * 3)
+    }
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({
+      size: 0.035, map: texture, vertexColors: true, transparent: true, opacity: 0.55,
+      depthWrite: false, blending: THREE.AdditiveBlending,
+    }))
+    pts.userData.omega = 0.45 / ((r0 + r1) / 2 + 0.6)
+    out.push(pts)
+  }
+  return out
+}
+
 export function createUniverse(container) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -66,11 +94,18 @@ export function createUniverse(container) {
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200)
-  camera.position.set(0, 4.2, 8.5)
+  camera.position.set(0, 4.2, reduced ? 8.5 : 26) // far away: the fly-in starts here
   const texture = dotTexture()
+  const tilt = new THREE.Group() // everything in the galaxy shares one tilt; local y is the disc's axis
+  tilt.rotation.x = 0.35
   const disc = galaxy({}, texture)
-  disc.rotation.x = 0.35
-  scene.add(disc, fieldStars(1500, texture))
+  const rings = diffuseRings(texture)
+  const core = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture, color: 0xffb59e, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  }))
+  core.scale.setScalar(2.4)
+  tilt.add(disc, core, ...rings)
+  scene.add(tilt, fieldStars(1500, texture))
 
   const pointer = { x: 0, y: 0 }
   const onPointer = (e) => {
@@ -78,12 +113,14 @@ export function createUniverse(container) {
     pointer.x = (e.clientX - r.left) / r.width - 0.5
     pointer.y = (e.clientY - r.top) / r.height - 0.5
   }
+  let distance = 8.5 // camera distance once the fly-in ends
   const resize = () => {
     const { clientWidth: w, clientHeight: h } = container
     renderer.setSize(w, h, false)
     camera.aspect = w / h
     // pull back on narrow screens so the whole disc fits
-    camera.position.z = w < 640 ? 12 : 8.5
+    distance = w < 640 ? 12 : 8.5
+    if (reduced) camera.position.z = distance
     camera.updateProjectionMatrix()
     renderer.render(scene, camera)
   }
@@ -93,12 +130,26 @@ export function createUniverse(container) {
 
   let raf = 0
   let last = 0
+  let age = 0 // seconds of animation, drives the fly-in
   const frame = (t) => {
     const dt = Math.min(t - (last || t), 50) / 1000
     last = t
-    disc.rotation.y += dt * 0.06
-    camera.position.x += (pointer.x * 2 - camera.position.x) * 0.03
-    camera.position.y += (4.2 - pointer.y * 2 - camera.position.y) * 0.03
+    age += dt
+    // fly-in: the camera swoops from far away while the galaxy spins down to its cruising speed
+    const intro = 1 - Math.pow(1 - Math.min(age / 3.5, 1), 3)
+    const spin = 0.16 + 1.4 * (1 - intro)
+    disc.rotation.y += dt * spin // spiral arms: a density wave that turns as one pattern
+    // disc stars orbit at roughly constant speed, so inner rings turn faster (a flat rotation curve)
+    for (const ring of rings) ring.rotation.y += dt * (ring.userData.omega + spin - 0.16)
+    core.material.opacity = 0.75 + 0.25 * Math.sin(age * 1.6)
+    core.scale.setScalar(2.2 + 0.25 * Math.sin(age * 1.6))
+    // slow drift around the galaxy, plus a lean toward the pointer
+    const drift = age * 0.05
+    const tx = Math.sin(drift) * 1.6 + pointer.x * 2
+    const ty = 4.2 + Math.sin(drift * 0.7) * 0.6 - pointer.y * 2
+    camera.position.x += (tx - camera.position.x) * 0.03
+    camera.position.y += (ty - camera.position.y) * 0.03
+    camera.position.z = distance + (26 - distance) * (1 - intro)
     camera.lookAt(0, 0, 0)
     renderer.render(scene, camera)
     raf = requestAnimationFrame(frame)
