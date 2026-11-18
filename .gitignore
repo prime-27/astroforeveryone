@@ -8,5 +8,6 @@ __pycache__/
 # React app build output and dependencies
 web/node_modules/
 web/dist/
+.preview-gh/
 # local tool settings
 .claude/

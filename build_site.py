@@ -358,8 +358,10 @@ WEB = ROOT / "web"
 
 
 def spa_links(s, up=""):
-    """Static-site paths -> React routes: about.html -> /about, tools/x.html -> /tools/x.html."""
-    s = re.sub(rf'(href)="{re.escape(up)}([a-z0-9-]+)\.html"', lambda m: f'{m[1]}="/{"" if m[2] == "index" else m[2]}"', s)
+    """Static-site paths -> React routes: about.html -> /about, tools/x.html -> /tools/x.html.
+    Inside a tool (up="../") links stay relative (../about) so they work at a domain root or under a sub-path."""
+    root = up or "/"
+    s = re.sub(rf'(href)="{re.escape(up)}([a-z0-9-]+)\.html"', lambda m: f'{m[1]}="{root}{"" if m[2] == "index" else m[2]}"', s)
     return re.sub(r'(src|href)="(tools|images)/', r'\1="/\2/', s)
 
 

@@ -18,7 +18,7 @@ export default function Header() {
   return (
     <header className="top">
       <Link className="brand" to="/">
-        <img src="/logo.webp" alt="ASTRO – The Astronomical Society for Training, Research and Outreach" width="52" height="52" />
+        <img src={`${import.meta.env.BASE_URL}logo.webp`} alt="ASTRO – The Astronomical Society for Training, Research and Outreach" width="52" height="52" />
         <span>Astronomy for Everyone</span>
       </Link>
       <nav aria-label="Main" ref={navRef}>

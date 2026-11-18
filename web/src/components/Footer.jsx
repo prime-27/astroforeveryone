@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer>
-      <img src="/logo.webp" alt="" width="72" height="72" />
+      <img src={`${import.meta.env.BASE_URL}logo.webp`} alt="" width="72" height="72" />
       <div>
         <strong>The Astronomical Society for Training, Research and Outreach (ASTRO)</strong>
         <br />

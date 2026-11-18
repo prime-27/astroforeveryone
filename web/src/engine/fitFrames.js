@@ -2,7 +2,7 @@
 // a zero-height body report scrollHeight == frame height / ~0: those keep their original aspect ratio.
 export function fitToolFrames(root) {
   const observers = []
-  const frames = root.querySelectorAll('iframe[src^="/tools/"]')
+  const frames = root.querySelectorAll('iframe[src*="/tools/"]')
   const handlers = []
   frames.forEach((f) => {
     const fit = () => {

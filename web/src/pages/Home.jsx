@@ -25,7 +25,7 @@ export default function Home() {
       <section className="hero">
         <Suspense fallback={null}><Universe className="universe" /></Suspense>
         <div className="hero-text">
-          <img className="hero-logo" src="/logo.webp" alt="ASTRO – The Astronomical Society for Training, Research and Outreach" width="160" height="160" />
+          <img className="hero-logo" src={`${import.meta.env.BASE_URL}logo.webp`} alt="ASTRO – The Astronomical Society for Training, Research and Outreach" width="160" height="160" />
           <h1>Explore the cosmos with professional astronomers</h1>
           <p>Training, outreach and research from Hyderabad, for students, families and anyone who looks up.</p>
           <div className="actions">
