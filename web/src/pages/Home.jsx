@@ -31,6 +31,7 @@ export default function Home() {
           <p>Training, outreach and research from Hyderabad, for students, families and anyone who looks up.</p>
           <div className="actions">
             <Link className="button primary" to="/programs">See programs</Link>
+            <Link className="button" to="/journey">Journey to the edge of the universe</Link>
             <Link className="button" to="/events">Upcoming events</Link>
           </div>
         </div>

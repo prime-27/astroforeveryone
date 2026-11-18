@@ -23,6 +23,7 @@ export default function Header() {
         <span>Astronomy for Everyone</span>
       </Link>
       <nav aria-label="Main" ref={navRef}>
+        <NavLink className="nav-feature" to="/journey">Journey</NavLink>
         {nav.map((group) => (
           <details key={group.label}>
             <summary>{group.label}</summary>

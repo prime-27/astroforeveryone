@@ -34,6 +34,8 @@ nav summary { cursor: pointer; list-style: none; padding: 6px 12px; border-radiu
 nav summary::-webkit-details-marker { display: none; }
 nav summary::after { content: " ▾"; font-size: .8em; }
 nav summary:hover, nav details[open] summary { color: var(--ink); background: var(--orbit-soft); }
+.nav-feature { padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 15px; color: var(--orbit-blue); text-decoration: none; }
+.nav-feature:hover, .nav-feature.active { background: var(--orbit-soft); color: var(--ink); }
 .menu {
   position: absolute; left: 0; top: calc(100% + 4px); min-width: 220px; display: flex; flex-direction: column;
   background: var(--surface-raised); border: 1px solid var(--line); border-radius: 12px; padding: 6px;
@@ -128,6 +130,43 @@ iframe.banner { display: block; width: 100%; height: auto; border: 0; margin: 8p
 /* brightness of every pixel (tools and photos too) goes to the red channel only; filter defined in index.html */
 html.night-vision { filter: url(#night-red); }
 html.night-vision .top { background: var(--surface); backdrop-filter: none; } /* blur has no backdrop under a filter */
+
+/* Journey: a pinned canvas, with the stops scrolling past it */
+/* the stage fills the screen and stays put; the steps scroll over it (negative margin pulls them up) */
+.journey { position: relative; }
+.journey-stage { position: sticky; top: 0; height: 100vh; z-index: 0; }
+.journey-stage canvas { width: 100%; height: 100%; display: block; }
+.journey-steps { position: relative; z-index: 1; margin-top: -100vh; padding: 0 16px 20vh max(24px, env(safe-area-inset-left, 0px)); }
+.journey-step { min-height: 100vh; display: grid; align-items: center; padding: 80px 0; }
+.journey-card {
+  max-width: 460px; background: rgba(7, 20, 43, .82); border: 1px solid var(--line); border-radius: 20px;
+  padding: 24px; backdrop-filter: blur(6px);
+}
+.journey-card h1, .journey-card h2 { margin: 4px 0 16px; font: 500 30px/1.2 var(--font-display); }
+.eyebrow { font: 700 12px/1.4 var(--font-sans); letter-spacing: .1em; text-transform: uppercase; color: var(--comet-coral); margin: 0; }
+.see { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 15px; color: var(--ink-muted); }
+.see strong { color: var(--orbit-blue); }
+.journey-end { margin-top: 16px; font-weight: 700; }
+.card-distance { display: none; margin-top: -8px; font: 14px/1.5 "Noto Sans Mono", ui-monospace, monospace; color: var(--orbit-blue); }
+.journey-hud {
+  position: absolute; right: 56px; bottom: 32px; margin: 0; display: flex; gap: 24px; text-align: right;
+  font: 14px/1.4 "Noto Sans Mono", ui-monospace, monospace;
+}
+.journey-hud dt { color: var(--ink-muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.journey-hud dd { margin: 0; color: var(--ink); font-size: 16px; }
+.journey-dots { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.journey-dots li { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.journey-dots li.past { background: var(--orbit-soft); }
+.journey-dots li.on { background: var(--comet-coral); box-shadow: 0 0 8px var(--comet-coral); }
+@media (max-width: 800px) {
+  /* phones: the scene sits in the upper part of the screen, the cards scroll up over the lower part */
+  .journey-steps { padding: 0 16px 30vh; }
+  .journey-step { align-items: end; padding: 0 0 6vh; }
+  .journey-card { max-width: none; }
+  .journey-hud { display: none; } /* the menu covers it on phones; each card shows the distance instead */
+  .card-distance { display: block; }
+  .journey-dots { right: 12px; }
+}
 
 footer {
   display: grid; gap: 6px; justify-items: center; padding: 32px 16px; text-align: center; font-size: 14px;
