@@ -368,6 +368,21 @@ def spa_links(s, up=""):
     return re.sub(r'(src|href)="(tools|images)/', r'\1="/\2/', s)
 
 
+# The tools load their libraries from web/public/vendor instead of CDNs, so they work offline and never break if a CDN does
+VENDOR = {
+    "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js": "../vendor/three-r128.min.js",
+    "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js": "../vendor/OrbitControls-r128.js",
+    "https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js": "../vendor/astronomy-2.1.19.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js": "../vendor/html2canvas-1.4.1.min.js",
+}
+
+
+def local_libs(s):
+    for url, path in VENDOR.items():
+        s = s.replace(f'src="{url}"', f'src="{path}"')
+    return s
+
+
 def export_react(bodies):
     """Write the React app's data: public/content/<page>.json, src/nav.json, and the tools, images and logo."""
     pub = WEB / "public"
@@ -379,7 +394,7 @@ def export_react(bodies):
         data = {"title": PAGES[page][0], "html": spa_links(body)}
         (pub / "content" / f"{page}.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     for f in (OUT / "tools").glob("*.html"):  # tools link back to pages as ../page.html
-        (pub / "tools" / f.name).write_text(spa_links(f.read_text(encoding="utf-8"), up="../"), encoding="utf-8")
+        (pub / "tools" / f.name).write_text(local_libs(spa_links(f.read_text(encoding="utf-8"), up="../")), encoding="utf-8")
     for f in (OUT / "images").glob("*.*"):
         shutil.copy(f, pub / "images" / f.name)
     shutil.copy(ROOT / "brand/astro-logo.webp", pub / "logo.webp")
